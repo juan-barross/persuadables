@@ -3,14 +3,37 @@
 from __future__ import annotations
 
 import time
+from dataclasses import dataclass
+from pathlib import Path
 
 import typer
 from rich.console import Console
 
-from campanha import ingest
+from campanha import ingest, run_sql
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
 console = Console()
+
+
+@dataclass
+class Contexto:
+    parquet: Path = ingest.PARQUET
+    reports: Path = Path("reports")
+
+
+ctx = Contexto()
+
+
+@app.callback()
+def principal(
+    amostra: bool = typer.Option(
+        False, help="usa a amostra sintética em data/amostra/ e grava em data/amostra/reports/"
+    ),
+) -> None:
+    if amostra:
+        ctx.parquet = Path("data/amostra/parquet")
+        ctx.reports = Path("data/amostra/reports")
+    ctx.reports.mkdir(parents=True, exist_ok=True)
 
 
 @app.command()
@@ -25,6 +48,22 @@ def baixar(
         ingest.converter(fonte, forcar)
         mb = fonte.parquet.stat().st_size / 2**20
         console.print(f"{fonte.tabela:<14} {mb:8.0f} MB  {time.perf_counter() - t0:6.0f} s")
+
+
+@app.command()
+def auditar() -> None:
+    """Roda sql/00_auditoria e grava reports/auditoria.md."""
+    con = run_sql.conectar(ctx.parquet)
+    resultados = run_sql.rodar_pasta(con, "00_auditoria", ctx.reports)
+    texto = run_sql.relatorio_md(
+        "Auditoria dos dados da X5",
+        resultados,
+        f"Gerado por `campanha auditar` sobre `{ctx.parquet.as_posix()}`. "
+        f"Data de corte: {run_sql.DATA_DE_CORTE}.",
+    )
+    (ctx.reports / "auditoria.md").write_text(texto, encoding="utf-8")
+    for r in resultados:
+        console.print(f"{r.nome:<20} {r.segundos:6.1f} s")
 
 
 if __name__ == "__main__":

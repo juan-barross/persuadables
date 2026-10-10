@@ -1,0 +1,10 @@
+verificacao,valor
+primeira compra,2018-11-21 21:02:33
+última compra,2019-03-18 23:40:03
+data de corte usada,2019-03-19 00:00:00
+itens de compra na data de corte ou depois (vazamento em potencial),0
+itens de compra antes de 2000 ou sem data,0
+clientes com cartão emitido na data de corte ou depois,0
+clientes com primeiro resgate antes da emissão do cartão,536
+clientes com primeiro resgate na data de corte ou depois,44953
+clientes com idade fora de 14 a 100 anos,1779

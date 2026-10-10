@@ -1,0 +1,13 @@
+verificacao,valor
+transações com purchase_sum zero,567.0
+transações com purchase_sum negativo,0.0
+itens com quantidade zero ou negativa,2707278.0
+itens com valor (trn_sum_from_iss) negativo,0.0
+itens com quantidade acima de 100,180.0
+transações com soma dos itens diferente de purchase_sum em mais de 1%,1391228.0
+"purchase_sum: percentil 0,1%",6.59
+purchase_sum: mediana,282.0
+"purchase_sum: percentil 99,9%",4471.953999999957
+purchase_sum: máximo,35149.04
+"transações acima do percentil 99,9%",8046.0
+pontos gastos positivos (deveriam ser <= 0),0.0

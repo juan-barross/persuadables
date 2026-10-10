@@ -1,0 +1,16 @@
+ordem,distribuicao,estatistica,valor
+1,transações por cliente,p10,4.0
+2,transações por cliente,mediana,15.0
+3,transações por cliente,p90,42.0
+4,transações por cliente,p99,85.0
+5,transações por cliente,máximo,320.0
+6,transações por loja,lojas,13882.0
+7,transações por loja,mediana,517.0
+8,transações por loja,máximo,2956.0
+11,transações por dia da semana,Monday,1225654.0
+12,transações por dia da semana,Tuesday,1046744.0
+13,transações por dia da semana,Wednesday,1094241.0
+14,transações por dia da semana,Thursday,1188604.0
+15,transações por dia da semana,Friday,1244880.0
+16,transações por dia da semana,Saturday,1160554.0
+17,transações por dia da semana,Sunday,1084524.0
