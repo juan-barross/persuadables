@@ -32,7 +32,7 @@ def conectar(parquet: Path, banco: Path | str = ":memory:") -> duckdb.DuckDBPyCo
     """Abre o banco e cria views sobre os Parquet que existirem na pasta."""
     con = duckdb.connect(str(banco))
     con.execute("SET enable_progress_bar = false")
-    for tabela in (*TABELAS_X5, "criteo"):
+    for tabela in (*TABELAS_X5, "perfil_cliente", "criteo"):
         arquivo = parquet / f"{tabela}.parquet"
         if arquivo.exists():
             con.execute(f"CREATE OR REPLACE VIEW {tabela} AS SELECT * FROM '{arquivo.as_posix()}'")
@@ -58,6 +58,13 @@ def rodar_pasta(
             if r.df is not None:
                 r.df.to_csv(destino / f"{r.nome}.csv", index=False)
     return resultados
+
+
+def construir_perfil(con: duckdb.DuckDBPyConnection, saida: Path | None = None) -> pd.DataFrame:
+    """Roda sql/10_perfil_cliente e devolve perfil_cliente ordenado por cliente."""
+    con.execute("DROP VIEW IF EXISTS perfil_cliente")
+    rodar_pasta(con, "10_perfil_cliente", saida)
+    return con.sql("SELECT * FROM perfil_cliente ORDER BY client_id").df()
 
 
 def tabela_md(df: pd.DataFrame, casas: int = 4) -> str:

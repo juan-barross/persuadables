@@ -74,5 +74,19 @@ def auditar() -> None:
         console.print(f"{r.nome:<20} {r.segundos:6.1f} s")
 
 
+@app.command()
+def perfil() -> None:
+    """Roda sql/10_perfil_cliente e grava perfil_cliente.parquet ao lado dos dados."""
+    t0 = time.perf_counter()
+    con = run_sql.conectar(ctx.parquet)
+    df = run_sql.construir_perfil(con, ctx.reports)
+    df.to_parquet(ctx.parquet / "perfil_cliente.parquet", index=False)
+    resumo = con.sql("SELECT * FROM perfil_cliente LIMIT 0").columns
+    console.print(
+        f"perfil_cliente: {len(df):,} linhas, {len(resumo) - 3} variáveis, "
+        f"{time.perf_counter() - t0:.0f} s"
+    )
+
+
 if __name__ == "__main__":
     app()
