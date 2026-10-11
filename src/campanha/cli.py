@@ -9,6 +9,7 @@ from pathlib import Path
 import typer
 from rich.console import Console
 
+from campanha import amostra as amostra_mod
 from campanha import ingest, run_sql
 
 app = typer.Typer(no_args_is_help=True, add_completion=False)
@@ -48,6 +49,13 @@ def baixar(
         ingest.converter(fonte, forcar)
         mb = fonte.parquet.stat().st_size / 2**20
         console.print(f"{fonte.tabela:<14} {mb:8.0f} MB  {time.perf_counter() - t0:6.0f} s")
+
+
+@app.command()
+def amostra() -> None:
+    """Gera a amostra sintética em data/amostra/parquet (sem rede)."""
+    destino = amostra_mod.gerar(Path("data/amostra/parquet"))
+    console.print(f"amostra gravada em {destino.as_posix()}")
 
 
 @app.command()

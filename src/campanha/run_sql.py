@@ -14,7 +14,7 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 
-SQL = Path("sql")
+SQL = Path(__file__).resolve().parents[2] / "sql"
 # Último dia com compra é 2019-03-18; a comunicação começa no dia seguinte (docs/adr/0001).
 DATA_DE_CORTE = "2019-03-19"
 
