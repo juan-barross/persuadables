@@ -47,5 +47,12 @@ target-version = "py312"
 [tool.ruff.lint]
 select = ["E", "F", "I", "UP", "B", "SIM"]
 
+[tool.ruff.lint.per-file-ignores]
+# Templates de relatório em Markdown: linha de tabela não pode ser quebrada.
+"src/campanha/placar.py" = ["E501"]
+"src/campanha/uplift.py" = ["E501"]
+"src/campanha/decisao.py" = ["E501"]
+"src/campanha/escala.py" = ["E501"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

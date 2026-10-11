@@ -88,5 +88,19 @@ def perfil() -> None:
     )
 
 
+@app.command()
+def placar() -> None:
+    """Sorteio, efeito, CUPED, poder e segmentos: grava reports/placar.md."""
+    from campanha import placar as placar_mod
+
+    con = run_sql.conectar(ctx.parquet)
+    r = placar_mod.rodar(con, ctx.reports)
+    console.print(
+        f"efeito {r['efeito_pp']:+.2f} p.p. [{r['ic_inf_pp']:.2f}; {r['ic_sup_pp']:.2f}], "
+        f"SRM p = {r['p_srm']:.3f}, CUPED reduz a variância em "
+        f"{r['cuped_multi']['reducao_variancia']:.1%}"
+    )
+
+
 if __name__ == "__main__":
     app()
