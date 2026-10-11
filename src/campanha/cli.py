@@ -135,5 +135,19 @@ def decisao(
     )
 
 
+@app.command()
+def escala() -> None:
+    """Placar em SQL sobre os 14 mi de linhas da Criteo, com tempo e memória."""
+    from campanha import escala as escala_mod
+
+    con = run_sql.conectar(ctx.parquet)
+    r = escala_mod.rodar(con, ctx.reports, ctx.parquet)
+    m = r["medicoes"]
+    console.print(
+        f"{r['n']:,} linhas: {m['segundos'].sum():.1f} s, "
+        f"pico {m['pico_memoria_processo_mb'].max():,.0f} MB"
+    )
+
+
 if __name__ == "__main__":
     app()
