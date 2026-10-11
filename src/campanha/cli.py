@@ -118,5 +118,22 @@ def uplift() -> None:
     console.print(f"escolhido: {r['escolhido']} ({time.perf_counter() - t0:.0f} s)")
 
 
+@app.command()
+def decisao(
+    custo: float = typer.Option(3.0, help="custo por contato, em rublos"),
+    margem: float = typer.Option(0.20, help="margem bruta sobre o ticket"),
+) -> None:
+    """Orçamento contra compradores incrementais por estratégia: grava reports/decisao.md."""
+    from campanha import decisao as decisao_mod
+
+    p = decisao_mod.Premissas(custo_por_contato=custo, margem=margem)
+    r = decisao_mod.rodar(ctx.parquet, ctx.reports, p)
+    m = r["melhor"]
+    console.print(
+        f"melhor: uplift para {m['fracao']:.0%} da base, lucro {m['lucro']:,.0f} "
+        f"contra {r['todos']['lucro']:,.0f} mandando para todos"
+    )
+
+
 if __name__ == "__main__":
     app()
