@@ -160,7 +160,10 @@ def curva_qini(y, u, t, pontos: int = 101) -> tuple[np.ndarray, np.ndarray]:
 def uplift_observado(teste: pd.DataFrame, score: np.ndarray, faixas: int = 10) -> pd.DataFrame:
     """Taxa de compra de tratados e controle por decil do score (1 = maior score)."""
     d = teste[["treatment_flg", "target"]].copy()
-    d["faixa"] = pd.qcut(-score, faixas, labels=range(1, faixas + 1)).astype(int)
+    # Decil pelo posto e não pelo valor: um score com empates (ou constante, quando a base é
+    # pequena demais para o LightGBM dividir) ainda gera dez faixas do mesmo tamanho.
+    posto = pd.Series(-score).rank(method="first")
+    d["faixa"] = pd.qcut(posto, faixas, labels=range(1, faixas + 1)).astype(int).to_numpy()
     linhas = []
     for f, g in d.groupby("faixa"):
         t, c = g[g.treatment_flg == 1], g[g.treatment_flg == 0]
