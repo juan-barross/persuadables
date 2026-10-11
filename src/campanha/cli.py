@@ -102,5 +102,21 @@ def placar() -> None:
     )
 
 
+@app.command()
+def uplift() -> None:
+    """Propensão, S-, T-, X-learner e class transformation: grava reports/uplift.md."""
+    import pandas as pd
+
+    from campanha import uplift as uplift_mod
+
+    t0 = time.perf_counter()
+    perfil = pd.read_parquet(ctx.parquet / "perfil_cliente.parquet")
+    r = uplift_mod.rodar(perfil, ctx.reports, ctx.parquet)
+    teste = r["tabela"][r["tabela"].conjunto == "teste"].set_index("modelo")
+    for nome, linha in teste.iterrows():
+        console.print(f"{nome:<22} AUUC {linha.auuc:.4f}  top30 {linha.uplift_top30_pp:+.2f} p.p.")
+    console.print(f"escolhido: {r['escolhido']} ({time.perf_counter() - t0:.0f} s)")
+
+
 if __name__ == "__main__":
     app()
