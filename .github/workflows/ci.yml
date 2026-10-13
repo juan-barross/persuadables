@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+
+      - name: Instala dependências
+        run: uv sync --locked --all-extras
+
+      - name: Lint Python
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+
+      - name: Lint SQL
+        run: uv run sqlfluff lint sql
+
+      # Inclui o teste de vazamento, que roda sobre a amostra sintética com compras
+      # plantadas depois da data de corte.
+      - name: Testes
+        run: uv run pytest -q
+
+      # A licença da X5 não é clara, então a CI não baixa a base: roda o pipeline inteiro
+      # (auditoria, perfil, placar, uplift e decisão) sobre a amostra sintética.
+      - name: Pipeline na amostra
+        run: uv run campanha --amostra tudo
