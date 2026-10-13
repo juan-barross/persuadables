@@ -99,4 +99,4 @@ def test_todo_sql_que_le_compras_filtra_pelo_corte(arquivo: Path) -> None:
     """Defesa extra: quem lê purchases direto tem que citar a data de corte."""
     texto = arquivo.read_text(encoding="utf-8")
     if re.search(r"\bFROM\s+purchases\b", texto, re.IGNORECASE):
-        assert "getvariable('data_de_corte')" in texto
+        assert "getvariable('data_de_corte')" in texto.lower()

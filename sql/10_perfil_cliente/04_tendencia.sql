@@ -9,7 +9,7 @@ CREATE OR REPLACE TABLE gasto_mensal AS
 WITH mensal AS (
     SELECT client_id, DATE_TRUNC('month', quando) AS mes, SUM(valor) AS gasto_mes
     FROM transacoes
-    GROUP BY 1, 2
+    GROUP BY client_id, mes
 )
 
 SELECT
@@ -23,11 +23,11 @@ CREATE OR REPLACE TABLE f_tendencia AS
 WITH janelas AS (
     SELECT
         client_id,
-        FLOOR(DATE_DIFF('hour', quando, getvariable('data_de_corte')) / (24.0 * 30))::INT
+        FLOOR(DATE_DIFF('hour', quando, GETVARIABLE('data_de_corte')) / (24.0 * 30))::INT
             AS janela,
         SUM(valor) AS gasto
     FROM transacoes
-    GROUP BY 1, 2
+    GROUP BY client_id, janela
 ),
 
 grade AS (

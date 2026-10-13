@@ -30,3 +30,7 @@ E duas que não são erro:
 - `first_redeem_date >= data_de_corte` vira nulo, e "já resgatou antes do corte" vira a
   variável de fidelidade.
 - Idades fora de 14 a 100 anos viram nulo (1.779 clientes).
+- A auditoria também usa esse grão. A primeira versão agrupava só por `transaction_id` e
+  usava `ANY_VALUE` para o horário: nas 28 colisões ele escolhia um dos dois horários ao
+  acaso, e a contagem por dia da semana mudou de uma execução para outra. No grão
+  `(client_id, transaction_id)` não há `purchase_sum` divergente nem item repetido.

@@ -149,5 +149,27 @@ def escala() -> None:
     )
 
 
+@app.command()
+def tudo() -> None:
+    """Roda o pipeline inteiro: dados, auditoria, perfil, placar, uplift, decisão e escala."""
+    na_amostra = ctx.parquet != ingest.PARQUET
+    passos = [
+        ("dados", amostra if na_amostra else lambda: baixar(base=None, forcar=False)),
+        ("auditoria", auditar),
+        ("perfil", perfil),
+        ("placar", placar),
+        ("uplift", uplift),
+        ("decisão", lambda: decisao(custo=3.0, margem=0.20)),
+    ]
+    for nome, passo in passos:
+        console.rule(nome)
+        passo()
+    if (ctx.parquet / "criteo.parquet").exists():
+        console.rule("escala (Criteo)")
+        escala()
+    else:
+        console.print("sem criteo.parquet: pulando a prova de escala")
+
+
 if __name__ == "__main__":
     app()

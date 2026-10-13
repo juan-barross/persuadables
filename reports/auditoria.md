@@ -26,8 +26,8 @@ Gerado por `campanha auditar` sobre `data/parquet`. Data de corte: 2019-03-19.
 | treatment_flg fora de {0, 1} | 0 |
 | target fora de {0, 1} | 0 |
 | transações com mais de um cliente, loja ou horário | 28 |
-| transações com purchase_sum diferente entre os itens | 28 |
-| itens repetidos (mesma transação e produto) | 3 |
+| transações (cliente + id) com purchase_sum diferente entre os itens | 0 |
+| itens repetidos (mesma transação e produto) | 0 |
 
 ## 03_datas
 
@@ -52,10 +52,10 @@ Gerado por `campanha auditar` sobre `data/parquet`. Data de corte: 2019-03-19.
 | itens com quantidade zero ou negativa | 2,707,278 |
 | itens com valor (trn_sum_from_iss) negativo | 0 |
 | itens com quantidade acima de 100 | 180 |
-| transações com soma dos itens diferente de purchase_sum em mais de 1% | 1,391,228 |
+| transações com soma dos itens diferente de purchase_sum em mais de 1% | 1,391,211 |
 | purchase_sum: percentil 0,1% | 6.59 |
 | purchase_sum: mediana | 282 |
-| purchase_sum: percentil 99,9% | 4,471.954 |
+| purchase_sum: percentil 99,9% | 4,471.9476 |
 | purchase_sum: máximo | 35,149.04 |
 | transações acima do percentil 99,9% | 8,046 |
 | pontos gastos positivos (deveriam ser <= 0) | 0 |
@@ -72,10 +72,10 @@ Gerado por `campanha auditar` sobre `data/parquet`. Data de corte: 2019-03-19.
 | 6 | transações por loja | lojas | 13,882 |
 | 7 | transações por loja | mediana | 517 |
 | 8 | transações por loja | máximo | 2,956 |
-| 11 | transações por dia da semana | Monday | 1,225,654 |
-| 12 | transações por dia da semana | Tuesday | 1,046,744 |
-| 13 | transações por dia da semana | Wednesday | 1,094,241 |
-| 14 | transações por dia da semana | Thursday | 1,188,604 |
-| 15 | transações por dia da semana | Friday | 1,244,880 |
-| 16 | transações por dia da semana | Saturday | 1,160,554 |
-| 17 | transações por dia da semana | Sunday | 1,084,524 |
+| 11 | transações por dia da semana | Monday | 1,225,658 |
+| 12 | transações por dia da semana | Tuesday | 1,046,748 |
+| 13 | transações por dia da semana | Wednesday | 1,094,246 |
+| 14 | transações por dia da semana | Thursday | 1,188,609 |
+| 15 | transações por dia da semana | Friday | 1,244,885 |
+| 16 | transações por dia da semana | Saturday | 1,160,556 |
+| 17 | transações por dia da semana | Sunday | 1,084,527 |

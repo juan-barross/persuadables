@@ -1,12 +1,15 @@
 -- Valores estranhos, sempre no grão da transação para não contar o mesmo valor por item.
+-- O grão é (client_id, transaction_id): só transaction_id junta as 28 colisões e deixa o
+-- ANY_VALUE escolher entre dois valores diferentes, o que muda o resultado a cada execução.
 WITH transacoes AS (
     SELECT
+        client_id,
         transaction_id,
         ANY_VALUE(purchase_sum) AS purchase_sum,
         SUM(trn_sum_from_iss) AS soma_itens,
         SUM(product_quantity) AS quantidade
     FROM purchases
-    GROUP BY transaction_id
+    GROUP BY client_id, transaction_id
 ),
 
 limites AS (
@@ -45,7 +48,7 @@ UNION ALL
 SELECT 'purchase_sum: máximo', MAX(purchase_sum) FROM transacoes
 UNION ALL
 SELECT 'transações acima do percentil 99,9%', COUNT(*)
-FROM transacoes, limites WHERE purchase_sum > p999
+FROM transacoes AS t CROSS JOIN limites AS l WHERE t.purchase_sum > l.p999
 UNION ALL
 SELECT 'pontos gastos positivos (deveriam ser <= 0)', COUNT(*)
 FROM purchases WHERE regular_points_spent > 0 OR express_points_spent > 0;

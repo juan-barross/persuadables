@@ -32,6 +32,11 @@ def conectar(parquet: Path, banco: Path | str = ":memory:") -> duckdb.DuckDBPyCo
     """Abre o banco e cria views sobre os Parquet que existirem na pasta."""
     con = duckdb.connect(str(banco))
     con.execute("SET enable_progress_bar = false")
+    # Num notebook de 4 GB, GROUP BY sobre 45 mi de itens não cabe na memória. Num banco em
+    # memória o DuckDB só despeja no disco se houver diretório temporário; sem ele, aborta.
+    temporario = Path("data") / "duckdb_tmp"
+    temporario.mkdir(parents=True, exist_ok=True)
+    con.execute(f"SET temp_directory = '{temporario.resolve().as_posix()}'")
     for tabela in (*TABELAS_X5, "perfil_cliente", "criteo"):
         arquivo = parquet / f"{tabela}.parquet"
         if arquivo.exists():

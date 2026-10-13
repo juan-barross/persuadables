@@ -1,0 +1,9 @@
+[sqlfluff]
+dialect = duckdb
+max_line_length = 100
+# As checagens da auditoria são linhas de UNION ALL compactas (uma checagem por linha, sem
+# repetir o alias em cada ramo). Estas quatro regras de layout brigam com esse formato.
+exclude_rules = aliasing.expression, layout.select_targets, layout.set_operators, layout.keyword_newline
+
+[sqlfluff:rules:capitalisation.functions]
+extended_capitalisation_policy = upper

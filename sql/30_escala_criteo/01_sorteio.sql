@@ -14,9 +14,9 @@ SELECT
     n,
     n_tratamento,
     n_controle,
+    exposicao_tratados,
+    exposicao_controle,
     n_tratamento / n AS prop_tratamento,
     POW(n_tratamento - 0.85 * n, 2) / (0.85 * n)
-    + POW(n_controle - 0.15 * n, 2) / (0.15 * n) AS qui2_vs_85pct,
-    exposicao_tratados,
-    exposicao_controle
+    + POW(n_controle - 0.15 * n, 2) / (0.15 * n) AS qui2_vs_85pct
 FROM bracos;

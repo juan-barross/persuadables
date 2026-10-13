@@ -6,5 +6,5 @@ client_id repetido em uplift_train,0
 "treatment_flg fora de {0, 1}",0
 "target fora de {0, 1}",0
 "transações com mais de um cliente, loja ou horário",28
-transações com purchase_sum diferente entre os itens,28
-itens repetidos (mesma transação e produto),3
+transações (cliente + id) com purchase_sum diferente entre os itens,0
+itens repetidos (mesma transação e produto),0

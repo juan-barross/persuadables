@@ -13,13 +13,13 @@ WITH intervalos AS (
 SELECT
     client_id,
     COUNT(*) AS n_transacoes,
-    DATE_DIFF('hour', MAX(quando), getvariable('data_de_corte')) / 24.0
+    DATE_DIFF('hour', MAX(quando), GETVARIABLE('data_de_corte')) / 24.0
         AS dias_desde_ultima,
-    DATE_DIFF('hour', MIN(quando), getvariable('data_de_corte')) / 24.0
+    DATE_DIFF('hour', MIN(quando), GETVARIABLE('data_de_corte')) / 24.0
         AS dias_desde_primeira,
     AVG(dias_desde_anterior) AS intervalo_medio_dias,
     STDDEV_SAMP(dias_desde_anterior) AS intervalo_desvio_dias,
-    COUNT(*) FILTER (WHERE quando >= getvariable('data_de_corte') - INTERVAL 30 DAY)
+    COUNT(*) FILTER (WHERE quando >= GETVARIABLE('data_de_corte') - INTERVAL 30 DAY)
         AS n_transacoes_30d,
     COUNT(DISTINCT CAST(quando AS DATE)) AS dias_com_compra
 FROM intervalos

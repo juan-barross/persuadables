@@ -5,8 +5,10 @@ WITH segmentado AS (
     SELECT
         treatment_flg,
         target,
-        CASE WHEN inativo_14d = 1 THEN 'sem comprar há mais de 14 dias'
-            ELSE 'comprou nos últimos 14 dias' END AS recencia_14d,
+        CASE
+            WHEN inativo_14d = 1 THEN 'sem comprar há mais de 14 dias'
+            ELSE 'comprou nos últimos 14 dias'
+        END AS recencia_14d,
         'Q' || NTILE(4) OVER (ORDER BY dias_desde_ultima, client_id)
         || ' (1 = mais recente)' AS quartil_recencia,
         'D' || LPAD(decil_gasto::VARCHAR, 2, '0') AS decil_gasto,

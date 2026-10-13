@@ -29,16 +29,24 @@ FROM (
         COUNT(DISTINCT client_id) > 1
         OR COUNT(DISTINCT store_id) > 1
         OR COUNT(DISTINCT transaction_datetime) > 1
-)
+) AS colisoes
 UNION ALL
 -- purchase_sum é da transação e se repete em cada item: somar direto multiplica o gasto.
-SELECT 'transações com purchase_sum diferente entre os itens', COUNT(*)
+-- Daqui em diante o grão é (client_id, transaction_id), que separa as colisões acima.
+SELECT 'transações (cliente + id) com purchase_sum diferente entre os itens', COUNT(*)
 FROM (
-    SELECT transaction_id
+    SELECT client_id, transaction_id
     FROM purchases
-    GROUP BY transaction_id
+    GROUP BY client_id, transaction_id
     HAVING COUNT(DISTINCT purchase_sum) > 1
-)
+) AS valor_divergente
 UNION ALL
-SELECT 'itens repetidos (mesma transação e produto)', COUNT(*) - COUNT(DISTINCT (transaction_id, product_id))
-FROM purchases;
+-- Atenção: o `sqlfluff fix` reescreve COUNT(DISTINCT (a, b)) como COUNT(DISTINCT a, b),
+-- que o DuckDB não aceita. Contar os pares repetidos num GROUP BY evita a armadilha.
+SELECT 'itens repetidos (mesma transação e produto)', COALESCE(SUM(n - 1), 0)::BIGINT
+FROM (
+    SELECT client_id, transaction_id, product_id, COUNT(*) AS n
+    FROM purchases
+    GROUP BY client_id, transaction_id, product_id
+    HAVING COUNT(*) > 1
+) AS repetidos;

@@ -13,5 +13,5 @@ SELECT
     COUNT(*) AS itens
 FROM purchases AS p
 SEMI JOIN uplift_train AS u ON p.client_id = u.client_id
-WHERE p.transaction_datetime < getvariable('data_de_corte')
+WHERE p.transaction_datetime < GETVARIABLE('data_de_corte')
 GROUP BY p.client_id, p.transaction_id;
