@@ -1,13 +1,3 @@
-"""Amostra sintética com o mesmo esquema da X5 e anomalias plantadas.
-
-Serve para a CI (a licença da X5 não é clara, então não redistribuímos o dado) e para
-o teste de vazamento: na base real não existe compra depois do corte, então o teste
-só prova alguma coisa se houver compras futuras plantadas para o perfil ignorar.
-
-O efeito da campanha é plantado só nos clientes inativos há mais de 30 dias, para o
-placar e os modelos de uplift terem algo a encontrar.
-"""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -17,91 +7,160 @@ import pandas as pd
 
 CORTE = pd.Timestamp("2019-03-19")
 INICIO = pd.Timestamp("2018-11-21")
+DIAS_DE_HISTORICO = (CORTE - INICIO).days
+
+FRACAO_NO_EXPERIMENTO = 0.6
+FRACAO_QUE_PAROU_DE_COMPRAR = 0.25
+FRACAO_QUE_JA_RESGATOU = 0.7
+TAXA_DE_COMPRA_BASE = 0.55
+QUEDA_NOS_INATIVOS = 0.10
+EFEITO_PLANTADO_NOS_INATIVOS = 0.15
+VALOR_DAS_COMPRAS_FUTURAS = 50_000.0
+IDADES_IMPOSSIVEIS = [150, -1, 3, 999, 120]
+
+COLUNAS_DE_PURCHASES = [
+    "client_id",
+    "transaction_id",
+    "transaction_datetime",
+    "regular_points_received",
+    "express_points_received",
+    "regular_points_spent",
+    "express_points_spent",
+    "purchase_sum",
+    "store_id",
+    "product_id",
+    "product_quantity",
+    "trn_sum_from_iss",
+    "trn_sum_from_red",
+]
 
 
 def gerar(destino: Path, n_clientes: int = 3000, semente: int = 7) -> Path:
     rng = np.random.default_rng(semente)
-    destino.mkdir(parents=True, exist_ok=True)
-    ids = [f"c{i:05d}" for i in range(n_clientes)]
+    ids = np.array([f"c{i:05d}" for i in range(n_clientes)])
 
-    emissao = INICIO - pd.to_timedelta(rng.integers(30, 900, n_clientes), unit="D")
-    resgate = emissao + pd.to_timedelta(rng.integers(1, 700, n_clientes), unit="D")
-    resgate = pd.Series(resgate).where(rng.random(n_clientes) < 0.7)  # 30% nunca resgatou
-    idade = rng.integers(18, 80, n_clientes)
-    idade[:5] = [150, -1, 3, 999, 120]  # idades impossíveis
-    clients = pd.DataFrame(
+    transacoes_passadas = _transacoes_antes_do_corte(rng, ids)
+    ultima_compra = transacoes_passadas.groupby("client_id")["transaction_datetime"].max()
+    transacoes = pd.concat(
+        [transacoes_passadas, _transacoes_plantadas(rng, ids)], ignore_index=True
+    )
+
+    destino.mkdir(parents=True, exist_ok=True)
+    _clientes(rng, ids).to_parquet(destino / "clients.parquet", index=False)
+    _experimento(rng, ids, ultima_compra).to_parquet(destino / "uplift_train.parquet", index=False)
+    _itens(rng, transacoes).to_parquet(destino / "purchases.parquet", index=False)
+    return destino
+
+
+def _clientes(rng: np.random.Generator, ids: np.ndarray) -> pd.DataFrame:
+    n = len(ids)
+    emissao = INICIO - pd.to_timedelta(rng.integers(30, 900, n), unit="D")
+    resgate = pd.Series(emissao + pd.to_timedelta(rng.integers(1, 700, n), unit="D"))
+    resgate = resgate.where(rng.random(n) < FRACAO_QUE_JA_RESGATOU)
+    resgate.iloc[5:61] = CORTE + pd.Timedelta(days=3)
+    idade = rng.integers(18, 80, n)
+    idade[: len(IDADES_IMPOSSIVEIS)] = IDADES_IMPOSSIVEIS
+    return pd.DataFrame(
         {
             "client_id": ids,
             "first_issue_date": emissao,
             "first_redeem_date": resgate,
             "age": idade,
-            "gender": rng.choice(["F", "M", "U"], n_clientes),
+            "gender": rng.choice(["F", "M", "U"], n),
         }
     )
-    # Resgates depois do corte: o perfil precisa tratá-los como "ainda não resgatou".
-    clients.loc[5:60, "first_redeem_date"] = CORTE + pd.Timedelta(days=3)
-
-    linhas = []
-    dias = (CORTE - INICIO).days
-    ultima = {}
-    for i, cid in enumerate(ids):
-        n_trn = int(rng.poisson(12)) + 1
-        # 25% dos clientes param de comprar 30 a 90 dias antes do corte
-        fim = dias - (int(rng.integers(31, 90)) if rng.random() < 0.25 else 0)
-        for t in range(n_trn):
-            quando = INICIO + pd.Timedelta(
-                days=int(rng.integers(0, max(fim, 1))), seconds=int(rng.integers(0, 86400))
-            )
-            quando = min(quando, CORTE - pd.Timedelta(seconds=1))
-            ultima[cid] = max(ultima.get(cid, quando), quando)
-            linhas += _itens(rng, cid, f"t{i:05d}_{t:03d}", quando)
-
-    # Compras na data de corte ou depois, com valores enormes: se o perfil usar
-    # qualquer uma delas, as variáveis mudam e o teste de vazamento pega.
-    for i, cid in enumerate(ids[::10]):
-        quando = CORTE + pd.Timedelta(days=int(rng.integers(0, 20)), hours=int(rng.integers(0, 23)))
-        linhas += _itens(rng, cid, f"futuro{i:05d}", quando, valor=50_000.0)
-    # Uma compra exatamente na data de corte (limite do <)
-    linhas += _itens(rng, ids[1], "futuro_no_corte", CORTE, valor=77_777.0)
-    # Colisão de transaction_id entre dois clientes, como na X5
-    linhas += _itens(rng, ids[2], "colisao", CORTE - pd.Timedelta(days=5))
-    linhas += _itens(rng, ids[3], "colisao", CORTE - pd.Timedelta(days=9))
-
-    purchases = pd.DataFrame(linhas)
-
-    exp = pd.DataFrame({"client_id": ids[: int(n_clientes * 0.6)]})
-    exp["treatment_flg"] = rng.integers(0, 2, len(exp))
-    inativo = exp["client_id"].map(lambda c: (CORTE - ultima[c]).days > 30).to_numpy()
-    p = 0.55 + 0.15 * exp["treatment_flg"].to_numpy() * inativo - 0.10 * inativo
-    exp["target"] = (rng.random(len(exp)) < p).astype(int)
-
-    clients.to_parquet(destino / "clients.parquet", index=False)
-    exp.to_parquet(destino / "uplift_train.parquet", index=False)
-    purchases.to_parquet(destino / "purchases.parquet", index=False)
-    return destino
 
 
-def _itens(rng, cid: str, trn: str, quando: pd.Timestamp, valor: float | None = None) -> list:
-    n_itens = int(rng.integers(1, 6))
-    total = valor if valor is not None else float(round(rng.gamma(2.0, 180.0), 2))
-    recebidos = round(total * 0.01, 1)
-    gastos = -float(rng.choice([0, 0, 0, 20, 50]))
-    loja = f"s{int(rng.integers(0, 40)):03d}"
-    return [
+def _transacoes_antes_do_corte(rng: np.random.Generator, ids: np.ndarray) -> pd.DataFrame:
+    n = len(ids)
+    por_cliente = rng.poisson(12, n) + 1
+    parou_de_comprar = rng.random(n) < FRACAO_QUE_PAROU_DE_COMPRAR
+    dias_parado = np.where(parou_de_comprar, rng.integers(31, 90, n), 0)
+
+    cliente = np.repeat(np.arange(n), por_cliente)
+    primeira_do_cliente = np.repeat(np.cumsum(por_cliente) - por_cliente, por_cliente)
+    sequencia = np.arange(len(cliente)) - primeira_do_cliente
+    ultimo_dia_com_compra = DIAS_DE_HISTORICO - dias_parado[cliente]
+    dia = np.floor(rng.random(len(cliente)) * ultimo_dia_com_compra)
+    segundo = rng.integers(0, 86_400, len(cliente))
+
+    return pd.DataFrame(
         {
-            "client_id": cid,
-            "transaction_id": trn,
-            "transaction_datetime": quando,
-            "regular_points_received": recebidos,
-            "express_points_received": 0.0,
-            "regular_points_spent": gastos,
-            "express_points_spent": 0.0,
-            "purchase_sum": total,  # valor da transação, repetido em cada item como na X5
-            "store_id": loja,
-            "product_id": f"p{int(rng.integers(0, 500)):04d}",
-            "product_quantity": float(rng.choice([0.0, 1.0, 1.0, 2.0])),  # 0 = por peso
-            "trn_sum_from_iss": round(total / n_itens, 2),
-            "trn_sum_from_red": np.nan,
+            "client_id": ids[cliente],
+            "transaction_id": [
+                f"t{c:05d}_{s:03d}" for c, s in zip(cliente, sequencia, strict=True)
+            ],
+            "transaction_datetime": INICIO
+            + pd.to_timedelta(dia, unit="D")
+            + pd.to_timedelta(segundo, unit="s"),
+            "purchase_sum": np.round(rng.gamma(2.0, 180.0, len(cliente)), 2),
         }
-        for _ in range(n_itens)
-    ]
+    )
+
+
+def _transacoes_plantadas(rng: np.random.Generator, ids: np.ndarray) -> pd.DataFrame:
+    com_compra_futura = ids[::10]
+    n = len(com_compra_futura)
+    futuras = pd.DataFrame(
+        {
+            "client_id": com_compra_futura,
+            "transaction_id": [f"futuro{i:05d}" for i in range(n)],
+            "transaction_datetime": CORTE
+            + pd.to_timedelta(rng.integers(0, 20, n), unit="D")
+            + pd.to_timedelta(rng.integers(0, 23, n), unit="h"),
+            "purchase_sum": VALOR_DAS_COMPRAS_FUTURAS,
+        }
+    )
+    casos_de_borda = pd.DataFrame(
+        {
+            "client_id": [ids[1], ids[2], ids[3]],
+            "transaction_id": ["futuro_no_corte", "colisao", "colisao"],
+            "transaction_datetime": [
+                CORTE,
+                CORTE - pd.Timedelta(days=5),
+                CORTE - pd.Timedelta(days=9),
+            ],
+            "purchase_sum": [77_777.0, 412.5, 233.9],
+        }
+    )
+    return pd.concat([futuras, casos_de_borda], ignore_index=True)
+
+
+def _itens(rng: np.random.Generator, transacoes: pd.DataFrame) -> pd.DataFrame:
+    n = len(transacoes)
+    itens_por_transacao = rng.integers(1, 6, n)
+    por_transacao = transacoes.assign(
+        regular_points_received=np.round(transacoes["purchase_sum"] * 0.01, 1),
+        express_points_received=0.0,
+        regular_points_spent=-rng.choice([0.0, 0.0, 0.0, 20.0, 50.0], n),
+        express_points_spent=0.0,
+        store_id=[f"s{loja:03d}" for loja in rng.integers(0, 40, n)],
+        trn_sum_from_iss=np.round(transacoes["purchase_sum"] / itens_por_transacao, 2),
+    )
+    itens = por_transacao.loc[np.repeat(np.arange(n), itens_por_transacao)].reset_index(drop=True)
+    return itens.assign(
+        product_id=[f"p{produto:04d}" for produto in rng.integers(0, 500, len(itens))],
+        product_quantity=rng.choice([0.0, 1.0, 1.0, 2.0], len(itens)),
+        trn_sum_from_red=np.nan,
+    )[COLUNAS_DE_PURCHASES]
+
+
+def _experimento(
+    rng: np.random.Generator, ids: np.ndarray, ultima_compra: pd.Series
+) -> pd.DataFrame:
+    participantes = ids[: int(len(ids) * FRACAO_NO_EXPERIMENTO)]
+    tratado = rng.integers(0, 2, len(participantes))
+    dias_sem_comprar = (CORTE - ultima_compra.loc[participantes]).dt.days.to_numpy()
+    inativo = dias_sem_comprar > 30
+    chance_de_comprar = (
+        TAXA_DE_COMPRA_BASE
+        - QUEDA_NOS_INATIVOS * inativo
+        + EFEITO_PLANTADO_NOS_INATIVOS * tratado * inativo
+    )
+    return pd.DataFrame(
+        {
+            "client_id": participantes,
+            "treatment_flg": tratado,
+            "target": (rng.random(len(participantes)) < chance_de_comprar).astype(int),
+        }
+    )
