@@ -6,15 +6,15 @@ Gerado por `persuadables escala`. As mesmas consultas do placar da X5 (sorteio, 
 
 ## Tempo e memória
 
-**13,979,592 linhas, 5.4 s no total, pico de memória do processo de 920 MB**,
+**13,979,592 linhas, 5.2 s no total, pico de memória do processo de 171 MB**,
 lendo direto de um Parquet de 177 MB.
 
 | consulta | segundos | linhas_por_segundo_mi | pico_memoria_processo_mb |
 |---|---|---|---|
-| 01_sorteio | 0.13 | 109.86 | 920.46 |
-| 02_balanco | 2.86 | 4.89 | 920.46 |
-| 03_efeito | 0.53 | 26.55 | 920.46 |
-| 04_cuped | 1.91 | 7.32 | 920.46 |
+| 01_sorteio | 0.16 | 85.27 | 107.73 |
+| 02_balanco | 2.69 | 5.2 | 169.44 |
+| 03_efeito | 0.5 | 28.06 | 169.44 |
+| 04_cuped | 1.82 | 7.66 | 170.98 |
 
 Máquina: Windows 11, 8 CPUs lógicas, 4 GB de RAM,
 DuckDB 1.5.6 com 8 threads. O pico é do processo Python inteiro

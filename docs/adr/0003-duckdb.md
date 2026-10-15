@@ -24,5 +24,5 @@ da memória de um notebook comum. O projeto precisa de SQL de verdade (janelas,
 
 ## Consequências
 
-A auditoria inteira roda em cerca de 3,5 minutos num notebook com Windows. O tempo e a
+A auditoria inteira roda em cerca de 80 s num notebook Windows com 4 GB de RAM. O tempo e a
 memória da Criteo (14 milhões de linhas) ficam medidos em `reports/escala_criteo.md`.
