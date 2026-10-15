@@ -51,11 +51,11 @@ Decil 1 = maior score. Se o modelo funciona, o uplift observado cai do decil 1 a
 Mediana das variáveis do perfil nos 20% com maior uplift previsto pelo `S-learner`
 contra os 20% com menor, no teste (valores em rublos):
 
-| grupo | n | taxa_controle | uplift_observado_pp | ic_inf_pp | ic_sup_pp | gasto_total | ticket_medio | n_transacoes | dias_desde_ultima | gasto_30d | intervalo_medio_dias | ja_resgatou | prop_transacoes_com_resgate | lojas_distintas | idade |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| 20% maior uplift | 8,001 | 0.46 | 6.85 | 4.66 | 9.04 | 2,830 | 290.15 | 9 | 7.38 | 765 | 9.25 | 1 | 0.07 | 2 | 58 |
-| 20% menor uplift | 8,001 | 0.73 | 2.4 | 0.49 | 4.31 | 13,129.71 | 444.58 | 32 | 2.5 | 3,513.39 | 3.28 | 1 | 0.03 | 3 | 40 |
-| todos | 40,008 | 0.6 | 3.32 | 2.37 | 4.27 | 6,110.61 | 394.85 | 15 | 4.42 | 1,804 | 6.17 | 1 | 0.04 | 2 | 45 |
+| grupo | n | taxa_t | taxa_c | uplift_pp | ic_inf_pp | ic_sup_pp | gasto_total | ticket_medio | n_transacoes | dias_desde_ultima | gasto_30d | intervalo_medio_dias | ja_resgatou | prop_transacoes_com_resgate | lojas_distintas | idade |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 20% maior uplift | 8,001 | 0.53 | 0.46 | 6.85 | 4.66 | 9.04 | 2,830 | 290.15 | 9 | 7.38 | 765 | 9.25 | 1 | 0.07 | 2 | 58 |
+| 20% menor uplift | 8,001 | 0.76 | 0.73 | 2.4 | 0.49 | 4.31 | 13,129.71 | 444.58 | 32 | 2.5 | 3,513.39 | 3.28 | 1 | 0.03 | 3 | 40 |
+| todos | 40,008 | 0.64 | 0.6 | 3.32 | 2.37 | 4.27 | 6,110.61 | 394.85 | 15 | 4.42 | 1,804 | 6.17 | 1 | 0.04 | 2 | 45 |
 
 Nos 20% de maior uplift a campanha mudou a compra em +6.9 p.p.
 (IC [4.7; 9.0]); nos 20% de menor, em

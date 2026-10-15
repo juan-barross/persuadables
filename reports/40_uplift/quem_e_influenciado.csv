@@ -1,4 +1,4 @@
-grupo,n,taxa_controle,uplift_observado_pp,ic_inf_pp,ic_sup_pp,gasto_total,ticket_medio,n_transacoes,dias_desde_ultima,gasto_30d,intervalo_medio_dias,ja_resgatou,prop_transacoes_com_resgate,lojas_distintas,idade
-20% maior uplift,8001,0.459346,6.85092,4.66499,9.03686,2830,290.147,9,7.375,765,9.24826,1,0.0666667,2,58
-20% menor uplift,8001,0.734142,2.40182,0.494864,4.30878,13129.7,444.577,32,2.5,3513.39,3.28045,1,0.03125,3,40
-todos,40008,0.603288,3.32393,2.3732,4.27466,6110.61,394.847,15,4.41667,1804,6.17143,1,0.0416667,2,45
+grupo,n,taxa_t,taxa_c,uplift_pp,ic_inf_pp,ic_sup_pp,gasto_total,ticket_medio,n_transacoes,dias_desde_ultima,gasto_30d,intervalo_medio_dias,ja_resgatou,prop_transacoes_com_resgate,lojas_distintas,idade
+20% maior uplift,8001,0.527855,0.459346,6.85092,4.66499,9.03686,2830,290.147,9,7.375,765,9.24826,1,0.0666667,2,58
+20% menor uplift,8001,0.75816,0.734142,2.40182,0.494864,4.30878,13129.7,444.577,32,2.5,3513.39,3.28045,1,0.03125,3,40
+todos,40008,0.636527,0.603288,3.32393,2.3732,4.27466,6110.61,394.847,15,4.41667,1804,6.17143,1,0.0416667,2,45

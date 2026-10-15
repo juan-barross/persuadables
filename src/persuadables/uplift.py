@@ -227,21 +227,9 @@ def salvar_scores(teste: pd.DataFrame, scores: dict, caminho: Path) -> None:
 def uplift_por_decil(teste: pd.DataFrame, score: np.ndarray) -> pd.DataFrame:
     posto = pd.Series(-score).rank(method="first")
     decil = pd.qcut(posto, DECIS, labels=range(1, DECIS + 1)).astype(int).to_numpy()
-    linhas = []
-    for numero, clientes in teste[["treatment_flg", "target"]].groupby(decil):
-        efeito = _efeito_observado(clientes)
-        linhas.append(
-            {
-                "faixa": numero,
-                "n": len(clientes),
-                "taxa_t": clientes.loc[clientes["treatment_flg"] == 1, "target"].mean(),
-                "taxa_c": clientes.loc[clientes["treatment_flg"] == 0, "target"].mean(),
-                "uplift_pp": efeito.diferenca * EM_PP,
-                "ic_inf_pp": efeito.ic_inf * EM_PP,
-                "ic_sup_pp": efeito.ic_sup * EM_PP,
-            }
-        )
-    return pd.DataFrame(linhas)
+    return pd.DataFrame(
+        {"faixa": numero} | efeito_observado(clientes) for numero, clientes in teste.groupby(decil)
+    )
 
 
 def quem_e_influenciado(teste: pd.DataFrame, score: np.ndarray) -> pd.DataFrame:
@@ -252,29 +240,28 @@ def quem_e_influenciado(teste: pd.DataFrame, score: np.ndarray) -> pd.DataFrame:
         "20% menor uplift": teste.iloc[ordem[-tamanho:]],
         "todos": teste,
     }
-    linhas = []
-    for nome, clientes in grupos.items():
-        efeito = _efeito_observado(clientes)
-        linhas.append(
-            {
-                "grupo": nome,
-                "n": len(clientes),
-                "taxa_controle": clientes.loc[clientes["treatment_flg"] == 0, "target"].mean(),
-                "uplift_observado_pp": efeito.diferenca * EM_PP,
-                "ic_inf_pp": efeito.ic_inf * EM_PP,
-                "ic_sup_pp": efeito.ic_sup * EM_PP,
-            }
-            | clientes[VARIAVEIS_DO_PERFIL].median().to_dict()
-        )
-    return pd.DataFrame(linhas)
-
-
-def _efeito_observado(clientes: pd.DataFrame) -> stats.Efeito:
-    tratados = clientes[clientes["treatment_flg"] == 1]
-    controle = clientes[clientes["treatment_flg"] == 0]
-    return stats.diferenca_proporcoes(
-        tratados["target"].sum(), len(tratados), controle["target"].sum(), len(controle)
+    return pd.DataFrame(
+        {"grupo": nome}
+        | efeito_observado(clientes)
+        | clientes[VARIAVEIS_DO_PERFIL].median().to_dict()
+        for nome, clientes in grupos.items()
     )
+
+
+def efeito_observado(clientes: pd.DataFrame) -> dict:
+    tratados = clientes.loc[clientes["treatment_flg"] == 1, "target"]
+    controle = clientes.loc[clientes["treatment_flg"] == 0, "target"]
+    efeito = stats.diferenca_proporcoes(
+        tratados.sum(), len(tratados), controle.sum(), len(controle)
+    )
+    return {
+        "n": len(clientes),
+        "taxa_t": tratados.mean(),
+        "taxa_c": controle.mean(),
+        "uplift_pp": efeito.diferenca * EM_PP,
+        "ic_inf_pp": efeito.ic_inf * EM_PP,
+        "ic_sup_pp": efeito.ic_sup * EM_PP,
+    }
 
 
 def grafico_qini(curvas: dict, n_teste: int, destino: Path) -> None:
@@ -325,7 +312,7 @@ def texto_do_relatorio(
         n_teste=len(teste),
         escolhido=escolhido,
         tabela_metricas=relatorio.tabela(no_teste.reset_index(), casas=4),
-        efeito_medio_pp=_efeito_observado(teste).diferenca * EM_PP,
+        efeito_medio_pp=efeito_observado(teste)["uplift_pp"],
         top30_escolhido_pp=no_teste.loc[escolhido, "uplift_top30_pp"],
         top30_propensao_pp=no_teste.loc["propensão", "uplift_top30_pp"],
         linhas_por_decil=_linhas_por_decil(por_decil[escolhido], por_decil["propensão"]),

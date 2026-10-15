@@ -38,13 +38,13 @@ contra os 20% com menor, no teste (valores em rublos):
 
 {tabela_influenciados}
 
-Nos 20% de maior uplift a campanha mudou a compra em {topo[uplift_observado_pp]:+.1f} p.p.
+Nos 20% de maior uplift a campanha mudou a compra em {topo[uplift_pp]:+.1f} p.p.
 (IC [{topo[ic_inf_pp]:.1f}; {topo[ic_sup_pp]:.1f}]); nos 20% de menor, em
-{base[uplift_observado_pp]:+.1f} p.p. (IC [{base[ic_inf_pp]:.1f}; {base[ic_sup_pp]:.1f}]).
+{base[uplift_pp]:+.1f} p.p. (IC [{base[ic_inf_pp]:.1f}; {base[ic_sup_pp]:.1f}]).
 Mediana dos mais influenciados contra os menos: {topo[n_transacoes]:.0f} contra
 {base[n_transacoes]:.0f} transações, {topo[gasto_total]:,.0f} contra
 {base[gasto_total]:,.0f} rublos gastos no período, {topo[dias_desde_ultima]:.1f} contra
 {base[dias_desde_ultima]:.1f} dias desde a última compra, idade de {topo[idade]:.0f}
 contra {base[idade]:.0f} anos. Sem a campanha,
-{topo[taxa_controle]:.0%} deles comprariam, contra {base[taxa_controle]:.0%} no grupo
+{topo[taxa_c]:.0%} deles comprariam, contra {base[taxa_c]:.0%} no grupo
 de menor uplift.

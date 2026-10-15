@@ -8,8 +8,9 @@ import altair as alt
 import pandas as pd
 import streamlit as st
 
+from persuadables.decisao import CORES, financeiro
+
 DECISAO = Path(__file__).resolve().parents[1] / "reports" / "50_decisao"
-CORES = {"uplift": "#eb6834", "propensão": "#2a78d6", "aleatório": "#52514e"}
 COLUNAS_DO_DETALHE = {
     "contatos": "contatos",
     "incrementais": "compradores a mais",
@@ -65,19 +66,6 @@ def barra_lateral(curvas: pd.DataFrame, premissas: dict) -> Escolhas:
             format_func=lambda f: f"{f:.0%}",
         )
     return Escolhas(custo, ticket, margem, compras, fracao)
-
-
-def com_lucro(curvas: pd.DataFrame, n_base: int, escolhas: Escolhas) -> pd.DataFrame:
-    contatos = curvas["fracao"] * n_base
-    custo = contatos * escolhas.custo
-    valor = escolhas.valor_por_comprador
-    return curvas.assign(
-        contatos=contatos,
-        custo=custo,
-        lucro=curvas["incrementais"] * valor - custo,
-        lucro_inf=curvas["inf"] * valor - custo,
-        lucro_sup=curvas["sup"] * valor - custo,
-    )
 
 
 def indicadores(por_orcamento: pd.DataFrame, fracao: float) -> None:
@@ -154,7 +142,9 @@ def main() -> None:
     )
 
     escolhas = barra_lateral(curvas, premissas)
-    por_orcamento = com_lucro(curvas, int(premissas["n_base"]), escolhas)
+    por_orcamento = financeiro(
+        curvas, int(premissas["n_base"]), escolhas.valor_por_comprador, escolhas.custo
+    )
     indicadores(por_orcamento, escolhas.fracao)
 
     st.subheader("Lucro incremental por orçamento")
