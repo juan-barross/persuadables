@@ -1,10 +1,10 @@
 {
-  "custo_por_contato":3.0,
-  "margem":0.2,
-  "compras_por_comprador":1.0,
-  "ticket":null,
-  "ticket_base":495.7832219113,
-  "valor_por_comprador":99.1566443823,
-  "n_base":200039,
-  "modelo_uplift":"S-learner"
+  "custo_por_contato": 3.0,
+  "margem": 0.2,
+  "compras_por_comprador": 1.0,
+  "ticket": null,
+  "ticket_base": 495.7832219112881,
+  "valor_por_comprador": 99.15664438225762,
+  "n_base": 200039,
+  "modelo_uplift": "S-learner"
 }

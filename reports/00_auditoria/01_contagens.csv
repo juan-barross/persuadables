@@ -1,9 +1,9 @@
 verificacao,valor
-linhas em clients,400162.0
-linhas em uplift_train,200039.0
-linhas em purchases (itens),45786568.0
-transações distintas,8045201.0
-clientes distintos com compra,400162.0
-clientes do experimento sem nenhuma compra,0.0
-clientes do experimento tratados,99981.0
-clientes do experimento que compraram depois (target = 1),124002.0
+linhas em clients,400162
+linhas em uplift_train,200039
+linhas em purchases (itens),4.57866e+07
+transações distintas,8.0452e+06
+clientes distintos com compra,400162
+clientes do experimento sem nenhuma compra,0
+clientes do experimento tratados,99981
+clientes do experimento que compraram depois (target = 1),124002

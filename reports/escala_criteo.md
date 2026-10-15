@@ -6,15 +6,15 @@ Gerado por `campanha escala`. As mesmas consultas do placar da X5 (sorteio, bala
 
 ## Tempo e memória
 
-**13,979,592 linhas, 6.9 s no total, pico de memória do processo de 175 MB**,
+**13,979,592 linhas, 4.4 s no total, pico de memória do processo de 1,359 MB**,
 lendo direto de um Parquet de 177 MB.
 
 | consulta | segundos | linhas_por_segundo_mi | pico_memoria_processo_mb |
 |---|---|---|---|
-| 01_sorteio | 0.12 | 117.41 | 113.55 |
-| 02_balanco | 3.42 | 4.08 | 175.24 |
-| 03_efeito | 0.71 | 19.71 | 175.24 |
-| 04_cuped | 2.61 | 5.35 | 175.24 |
+| 01_sorteio | 0.08 | 166.81 | 1,359.45 |
+| 02_balanco | 2.31 | 6.05 | 1,359.45 |
+| 03_efeito | 0.49 | 28.26 | 1,359.45 |
+| 04_cuped | 1.56 | 8.97 | 1,359.45 |
 
 Máquina: Windows 11, 8 CPUs lógicas, 4 GB de RAM,
 DuckDB 1.5.6 com 8 threads. O pico é do processo Python inteiro
