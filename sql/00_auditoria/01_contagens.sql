@@ -1,5 +1,3 @@
--- Tamanho de cada tabela e cobertura do experimento.
--- purchases tem uma linha por item; a transação é transaction_id.
 WITH clientes_com_compra AS (
     SELECT DISTINCT client_id FROM purchases
 )

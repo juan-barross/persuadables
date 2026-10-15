@@ -1,6 +1,3 @@
--- Valores estranhos, sempre no grão da transação para não contar o mesmo valor por item.
--- O grão é (client_id, transaction_id): só transaction_id junta as 28 colisões e deixa o
--- ANY_VALUE escolher entre dois valores diferentes, o que muda o resultado a cada execução.
 WITH transacoes AS (
     SELECT
         client_id,
@@ -25,7 +22,6 @@ FROM transacoes WHERE purchase_sum = 0
 UNION ALL
 SELECT 'transações com purchase_sum negativo', COUNT(*) FROM transacoes WHERE purchase_sum < 0
 UNION ALL
--- Na X5 todos têm quantidade 0 e valor positivo (média ~55): produtos vendidos por peso.
 SELECT 'itens com quantidade zero ou negativa', COUNT(*)
 FROM purchases WHERE product_quantity <= 0
 UNION ALL

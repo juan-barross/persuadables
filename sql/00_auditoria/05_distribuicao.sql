@@ -1,5 +1,3 @@
--- Como as compras se espalham por cliente, dia da semana e loja.
--- Grão (client_id, transaction_id), pelo mesmo motivo de 04_valores.sql.
 WITH transacoes AS (
     SELECT
         client_id,

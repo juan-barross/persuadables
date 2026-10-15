@@ -1,6 +1,3 @@
--- CUPED em SQL, para várias covariáveis pré-campanha de uma vez.
--- θ = cov(y, x) / var(x) juntando os braços; y_aj = y - θ (x - média(x)).
--- A redução da variância do estimador deve ficar perto de ρ(y, x)².
 WITH longo AS (
     UNPIVOT (
         SELECT

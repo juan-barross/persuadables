@@ -1,5 +1,3 @@
--- Período coberto e datas que contaminariam o perfil.
--- valor é texto porque mistura datas e contagens no mesmo relatório.
 SELECT 'primeira compra' AS verificacao, CAST(MIN(transaction_datetime) AS VARCHAR) AS valor
 FROM purchases
 UNION ALL

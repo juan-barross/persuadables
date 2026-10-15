@@ -1,5 +1,3 @@
--- Fidelidade e cadastro. Datas do cadastro posteriores ao corte viram nulo (ADR 0004):
--- 44.953 clientes da X5 têm o primeiro resgate depois do corte.
 CREATE OR REPLACE TABLE f_fidelidade AS
 WITH pontos AS (
     SELECT

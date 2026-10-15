@@ -1,4 +1,3 @@
--- Efeito médio (intenção de tratar) em visita e conversão, com IC 95% de Wald.
 WITH longo AS (
     UNPIVOT (SELECT treatment, visit, conversion FROM criteo)
     ON visit, conversion

@@ -1,12 +1,3 @@
--- CUPED em visita, uma covariável de cada vez, por estatísticas suficientes.
---
--- A primeira versão fazia como no placar da X5: UNPIVOT das 12 variáveis (168 mi de linhas),
--- JOIN com θ e VAR_SAMP do y ajustado. Na Criteo isso estourou os 3 GB de memória do
--- notebook. Mas o CUPED só precisa, por braço e por variável, de n, Σy, Σy², Σx, Σx² e Σxy:
---   θ          = cov(y, x) / var(x)                  (juntando os braços)
---   média_aj   = média(y) - θ (média_braço(x) - média(x))
---   var_aj     = var(y) + θ² var(x) - 2θ cov(y, x)   (dentro de cada braço)
--- Então agregamos primeiro (2 linhas por soma) e só depois fazemos o UNPIVOT.
 WITH base AS (
     SELECT treatment, COUNT(*) AS n, SUM(visit) AS sy, SUM(visit * visit) AS syy
     FROM criteo
@@ -46,7 +37,6 @@ momentos AS (
 ),
 
 juntos AS (
-    -- θ e média de x juntando os dois braços
     SELECT
         covariavel,
         (SUM(sxy) - SUM(sx) * SUM(sy) / SUM(n))

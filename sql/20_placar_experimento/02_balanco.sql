@@ -1,6 +1,3 @@
--- Balanço: diferença média padronizada (SMD) de cada variável do perfil entre os braços.
--- UNPIVOT transforma as colunas em linhas (variavel, valor) para calcular tudo de uma vez.
--- Regra usual: |SMD| < 0,1 é balanço bom.
 WITH numericas AS (
     SELECT
         treatment_flg,

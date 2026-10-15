@@ -1,6 +1,3 @@
--- Efeito médio na taxa de compra, com IC 95% de Wald calculado no próprio SQL.
--- Como ~62% compram de qualquer jeito, o efeito vem em p.p., em % relativo e em
--- compras incrementais (efeito × tratados).
 WITH bracos AS (
     SELECT
         COUNT(*) FILTER (WHERE treatment_flg = 1) AS n_t,

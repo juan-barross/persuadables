@@ -1,5 +1,3 @@
--- Diversidade: lojas e produtos diferentes, e o peso da loja preferida.
--- Produto é atributo do item, então aqui é preciso voltar a purchases (com o corte).
 CREATE OR REPLACE TABLE f_diversidade AS
 WITH produtos AS (
     SELECT p.client_id, COUNT(DISTINCT p.product_id) AS produtos_distintos

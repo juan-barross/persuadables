@@ -1,5 +1,3 @@
-"""O SQL da Criteo bate com a estatística em Python, sobre dados sintéticos com o mesmo esquema."""
-
 from __future__ import annotations
 
 from pathlib import Path
@@ -40,8 +38,8 @@ def test_cuped_por_estatisticas_suficientes_bate_com_python(criteo_falsa) -> Non
         assert sql.loc[f, "efeito_cuped_pp"] == pytest.approx(
             py.efeito_ajustado.diferenca * 100, abs=1e-9
         )
-    # f1 é a única que explica a visita; deve ser a que mais reduz a variância
-    assert sql.index[0] == "f1"
+    unica_que_explica_a_visita = "f1"
+    assert sql.index[0] == unica_que_explica_a_visita
 
 
 def test_efeito_em_visita_bate_com_python(criteo_falsa) -> None:

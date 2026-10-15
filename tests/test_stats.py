@@ -42,7 +42,7 @@ def test_cuped_reduz_variancia_em_rho_quadrado_sem_viesar() -> None:
     n = 200_000
     x = rng.normal(size=n)
     t = rng.integers(0, 2, n)
-    y = 0.6 * x + rng.normal(size=n) + 0.05 * t  # ρ² ≈ 0,36 / 1,36
+    y = 0.6 * x + rng.normal(size=n) + 0.05 * t
     r = stats.cuped(y, x, t)
     assert r.efeito_ajustado.diferenca == pytest.approx(0.05, abs=0.01)
     assert r.reducao_variancia == pytest.approx(r.correlacao**2, abs=0.01)
@@ -51,11 +51,12 @@ def test_cuped_reduz_variancia_em_rho_quadrado_sem_viesar() -> None:
 
 def test_mde_bate_com_statsmodels() -> None:
     mde = stats.efeito_minimo_detectavel(0.62, 100_000, 100_000)
-    # NormalIndPower trabalha com o tamanho de efeito h de Cohen; invertendo:
-    h = NormalIndPower().solve_power(
+    tamanho_de_efeito_cohen = NormalIndPower().solve_power(
         effect_size=None, nobs1=100_000, alpha=0.05, power=0.8, ratio=1.0
     )
-    assert proportion_effectsize(0.62 + mde, 0.62) == pytest.approx(h, rel=0.02)
+    assert proportion_effectsize(0.62 + mde, 0.62) == pytest.approx(
+        tamanho_de_efeito_cohen, rel=0.02
+    )
 
 
 def test_benjamini_hochberg_bate_com_statsmodels() -> None:

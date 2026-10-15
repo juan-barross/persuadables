@@ -1,6 +1,3 @@
--- Efeito por segmento. O p-valor e a correção de Benjamini-Hochberg são feitos em
--- Python (stats.benjamini_hochberg), porque são muitos testes ao mesmo tempo.
--- A faixa de ticket histórico faz o papel possível da métrica de proteção (ADR 0002).
 WITH segmentado AS (
     SELECT
         treatment_flg,

@@ -1,6 +1,3 @@
--- Perfil final: uma linha por cliente do experimento.
--- Cada bloco já foi agregado por cliente antes do join, então nenhum join multiplica linhas.
--- NTILE desempata por client_id para o decil não mudar de uma execução para outra.
 CREATE OR REPLACE TABLE perfil_cliente AS
 WITH base AS (
     SELECT
@@ -52,14 +49,11 @@ SELECT
     NTILE(10) OVER (ORDER BY gasto_total, client_id) AS decil_gasto,
     NTILE(10) OVER (ORDER BY n_transacoes, client_id) AS decil_frequencia,
     NTILE(10) OVER (ORDER BY ticket_medio NULLS FIRST, client_id) AS decil_ticket,
-    -- Todo cliente do experimento da X5 comprou nos 23 dias antes do corte: o segmento
-    -- "inativo há mais de 30 dias" do plano original fica vazio. O corte usado é 14 dias.
     CASE WHEN dias_desde_ultima > 14 OR dias_desde_ultima IS NULL THEN 1 ELSE 0 END
         AS inativo_14d
 FROM base
 ORDER BY client_id;
 
--- Resumo para o relatório: a tabela tem que ter exatamente uma linha por cliente.
 SELECT
     (SELECT COUNT(*) FROM uplift_train) AS clientes_experimento,
     COUNT(*) AS linhas_perfil,

@@ -1,4 +1,3 @@
--- Balanço das 12 variáveis anônimas: mesmo UNPIVOT do placar da X5, agora em 14 mi de linhas.
 WITH longo AS (
     UNPIVOT (SELECT treatment, COLUMNS('^f[0-9]+$') FROM criteo)
     ON COLUMNS('^f[0-9]+$')

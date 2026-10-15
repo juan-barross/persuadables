@@ -1,5 +1,3 @@
--- Sorteio na Criteo: o tratamento é `treatment` (sorteado, 85% esperados), não `exposure`
--- (quem de fato viu o anúncio, que depende do comportamento do usuário).
 WITH bracos AS (
     SELECT
         COUNT(*) FILTER (WHERE treatment = 1) AS n_tratamento,

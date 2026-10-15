@@ -1,4 +1,3 @@
--- Valor: ticket e gasto em janelas que terminam no corte.
 CREATE OR REPLACE TABLE f_valor AS
 SELECT
     client_id,
