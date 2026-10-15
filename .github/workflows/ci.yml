@@ -27,12 +27,8 @@ jobs:
       - name: Lint SQL
         run: uv run sqlfluff lint sql
 
-      # Inclui o teste de vazamento, que roda sobre a amostra sintética com compras
-      # plantadas depois da data de corte.
       - name: Testes
         run: uv run pytest -q
 
-      # A licença da X5 não é clara, então a CI não baixa a base: roda o pipeline inteiro
-      # (auditoria, perfil, placar, uplift e decisão) sobre a amostra sintética.
       - name: Pipeline na amostra
-        run: uv run campanha --amostra tudo
+        run: uv run persuadables --amostra tudo

@@ -1,6 +1,6 @@
 # Modelos de uplift
 
-Gerado por `campanha uplift`. Divisão estratificada por tratamento × desfecho, semente
+Gerado por `persuadables uplift`. Divisão estratificada por tratamento × desfecho, semente
 {semente}: treino {n_treino:,}, validação {n_validacao:,}, teste {n_teste:,}. Todos os modelos usam
 LightGBM com os mesmos hiperparâmetros e as variáveis do perfil em SQL. O modelo escolhido
 é o de maior AUUC na **validação** (`{escolhido}`); os números abaixo são do

@@ -8,8 +8,8 @@ import pandas as pd
 import typer
 from rich.console import Console
 
-from campanha import amostra as amostra_sintetica
-from campanha import ingest, relatorio, run_sql
+from persuadables import amostra as amostra_sintetica
+from persuadables import ingest, relatorio, run_sql
 
 AMOSTRA = Path("data/amostra")
 
@@ -66,7 +66,7 @@ def auditar() -> None:
     texto = relatorio.de_consultas(
         "Auditoria dos dados da X5",
         resultados,
-        f"Gerado por `campanha auditar` sobre `{pastas.parquet.as_posix()}`. "
+        f"Gerado por `persuadables auditar` sobre `{pastas.parquet.as_posix()}`. "
         f"Data de corte: {run_sql.DATA_DE_CORTE}.",
     )
     (pastas.reports / "auditoria.md").write_text(texto, encoding="utf-8")
@@ -88,7 +88,7 @@ def perfil() -> None:
 
 @app.command(help="Lê o experimento: sorteio, efeito, CUPED, poder e segmentos.")
 def placar() -> None:
-    from campanha import placar as placar_do_experimento
+    from persuadables import placar as placar_do_experimento
 
     r = placar_do_experimento.rodar(run_sql.conectar(pastas.parquet), pastas.reports)
     console.print(
@@ -100,7 +100,7 @@ def placar() -> None:
 
 @app.command(help="Treina propensão e modelos de uplift e compara por Qini e AUUC.")
 def uplift() -> None:
-    from campanha import uplift as modelos_de_uplift
+    from persuadables import uplift as modelos_de_uplift
 
     inicio = time.perf_counter()
     perfil_cliente = pd.read_parquet(pastas.parquet / "perfil_cliente.parquet")
@@ -115,7 +115,7 @@ def decisao(
     custo: float = typer.Option(3.0, help="Custo por contato, em rublos."),
     margem: float = typer.Option(0.20, help="Margem bruta sobre o ticket."),
 ) -> None:
-    from campanha import decisao as decisao_de_orcamento
+    from persuadables import decisao as decisao_de_orcamento
 
     premissas = decisao_de_orcamento.Premissas(custo_por_contato=custo, margem=margem)
     r = decisao_de_orcamento.rodar(pastas.parquet, pastas.reports, premissas)
@@ -127,7 +127,7 @@ def decisao(
 
 @app.command(help="Roda o placar em SQL nos 14 mi de linhas da Criteo, com tempo e memória.")
 def escala() -> None:
-    from campanha import escala as prova_de_escala
+    from persuadables import escala as prova_de_escala
 
     if not (pastas.parquet / "criteo.parquet").exists():
         console.print("sem criteo.parquet: prova de escala pulada")

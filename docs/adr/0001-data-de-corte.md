@@ -17,7 +17,7 @@ comunicação", mas não dá a data. A auditoria (`sql/00_auditoria/03_datas.sql
 
 ## Decisão
 
-`DATA_DE_CORTE = 2019-03-19 00:00` em `src/campanha/run_sql.py`, exposta ao SQL como
+`DATA_DE_CORTE = 2019-03-19 00:00` em `src/persuadables/run_sql.py`, exposta ao SQL como
 `getvariable('data_de_corte')`. Todo SQL do perfil filtra `transaction_datetime <
 data_de_corte`, e campos de data do cadastro posteriores ao corte viram nulo
 (ver ADR 0004).

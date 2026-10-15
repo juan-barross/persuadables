@@ -27,9 +27,9 @@ ticket, margem e orçamento: `uv run --extra app streamlit run app/streamlit_app
 |---|---|---|
 | 1. Auditoria em SQL | [`sql/00_auditoria/`](sql/00_auditoria) | [`reports/auditoria.md`](reports/auditoria.md): chaves, datas, valores e distribuições, cada problema contado |
 | 2. Perfil do cliente em SQL | [`sql/10_perfil_cliente/`](sql/10_perfil_cliente) | 36 variáveis por cliente (recência com `LAG`, gasto em janelas com `FILTER`, tendência em meses móveis, decis com `NTILE`), tudo antes da data de corte |
-| 3. Placar do experimento | [`sql/20_placar_experimento/`](sql/20_placar_experimento) + [`stats.py`](src/campanha/stats.py) | [`reports/placar.md`](reports/placar.md): sorteio (SRM), balanço (SMD), efeito com IC analítico e bootstrap, CUPED, poder, segmentos com Benjamini-Hochberg |
-| 4. Uplift | [`uplift.py`](src/campanha/uplift.py) | [`reports/uplift.md`](reports/uplift.md): propensão contra S-, T-, X-learner e class transformation, com Qini, AUUC e perfil de quem é influenciado |
-| 5. Decisão | [`decisao.py`](src/campanha/decisao.py) | [`reports/decisao.md`](reports/decisao.md): compradores incrementais e lucro por orçamento, com IC e sensibilidade às premissas |
+| 3. Placar do experimento | [`sql/20_placar_experimento/`](sql/20_placar_experimento) + [`stats.py`](src/persuadables/stats.py) | [`reports/placar.md`](reports/placar.md): sorteio (SRM), balanço (SMD), efeito com IC analítico e bootstrap, CUPED, poder, segmentos com Benjamini-Hochberg |
+| 4. Uplift | [`uplift.py`](src/persuadables/uplift.py) | [`reports/uplift.md`](reports/uplift.md): propensão contra S-, T-, X-learner e class transformation, com Qini, AUUC e perfil de quem é influenciado |
+| 5. Decisão | [`decisao.py`](src/persuadables/decisao.py) | [`reports/decisao.md`](reports/decisao.md): compradores incrementais e lucro por orçamento, com IC e sensibilidade às premissas |
 | 6. Escala | [`sql/30_escala_criteo/`](sql/30_escala_criteo) | [`reports/escala_criteo.md`](reports/escala_criteo.md): o mesmo placar em 14 milhões de linhas |
 
 Decisões de projeto em [`docs/adr/`](docs/adr): data de corte, desfecho e métrica de proteção,
@@ -124,13 +124,13 @@ uv sync --all-extras
 Sem rede, com a amostra sintética (anomalias e efeito plantados), em menos de um minuto:
 
 ```bash
-uv run campanha --amostra tudo
+uv run persuadables --amostra tudo
 ```
 
 Com os dados reais (baixa cerca de 650 MB da X5 e 310 MB da Criteo e converte para Parquet):
 
 ```bash
-uv run campanha tudo
+uv run persuadables tudo
 ```
 
 Cada passo também roda sozinho: `baixar`, `auditar`, `perfil`, `placar`, `uplift`,
@@ -151,7 +151,7 @@ Cada passo também roda sozinho: `baixar`, `auditar`, `perfil`, `placar`, `uplif
 
 - **X5 RetailHero** ([scikit-uplift](https://www.uplift-modeling.com/en/latest/api/datasets/fetch_x5.html),
   competição original na [ods.ai](https://ods.ai/competitions/x5-retailhero-uplift-modeling/data)):
-  não encontrei licença publicada. Os dados não estão no repositório; `campanha baixar` busca
+  não encontrei licença publicada. Os dados não estão no repositório; `persuadables baixar` busca
   na fonte. Valores em rublos.
 - **Criteo Uplift v2.1** ([Criteo AI Lab](https://ailab.criteo.com/?p=859)): CC BY-NC-SA 4.0.
   Diemert, Betlei, Renaudin e Amini, *A Large Scale Benchmark for Uplift Modeling*, AdKDD 2018.

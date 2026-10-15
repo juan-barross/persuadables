@@ -1,22 +1,17 @@
-# Python
 __pycache__/
 *.py[cod]
 .venv/
 
-# Ferramentas
 .pytest_cache/
 .ruff_cache/
 .sqlfluff_cache/
 
-# Segredos
 .env
 
-# Dados da X5 e da Criteo: não redistribuímos, o `campanha baixar` busca na fonte
 data/
 *.duckdb
 *.duckdb.wal
 
-# Editor / SO
 .vscode/
 .idea/
 .DS_Store

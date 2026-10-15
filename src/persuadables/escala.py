@@ -9,7 +9,7 @@ import duckdb
 import pandas as pd
 import psutil
 
-from campanha import relatorio, run_sql
+from persuadables import relatorio, run_sql
 
 MEGABYTE = 2**20
 GIGABYTE = 2**30

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING
 import pandas as pd
 
 if TYPE_CHECKING:
-    from campanha.run_sql import Resultado
+    from persuadables.run_sql import Resultado
 
 MODELOS = Path(__file__).parent / "relatorios"
 DIGITOS_SIGNIFICATIVOS = "%.6g"

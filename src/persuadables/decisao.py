@@ -8,7 +8,7 @@ from pathlib import Path
 import numpy as np
 import pandas as pd
 
-from campanha import graficos, relatorio
+from persuadables import graficos, relatorio
 
 FRACOES = np.round(np.linspace(0.05, 1.0, 20), 2)
 FRACOES_NA_TABELA = [0.1, 0.2, 0.3, 0.5, 0.7, 1.0]

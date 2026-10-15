@@ -6,7 +6,7 @@ from statsmodels.stats.multitest import multipletests
 from statsmodels.stats.power import NormalIndPower
 from statsmodels.stats.proportion import proportion_effectsize
 
-from campanha import stats
+from persuadables import stats
 
 
 def test_srm_sem_desvio_tem_p_alto() -> None:

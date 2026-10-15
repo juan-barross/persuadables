@@ -5,7 +5,7 @@ from pathlib import Path
 
 import pytest
 
-from campanha import amostra
+from persuadables import amostra
 
 
 @pytest.fixture(scope="session")

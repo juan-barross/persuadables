@@ -7,7 +7,7 @@ from pathlib import Path
 import duckdb
 import pandas as pd
 
-from campanha import relatorio
+from persuadables import relatorio
 
 SQL = Path(__file__).resolve().parents[2] / "sql"
 DATA_DE_CORTE = "2019-03-19"

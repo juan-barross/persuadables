@@ -1,6 +1,6 @@
 # Da métrica para a decisão
 
-Gerado por `campanha decisao`. Curvas estimadas no conjunto de teste e escaladas para a
+Gerado por `persuadables decisao`. Curvas estimadas no conjunto de teste e escaladas para a
 base do experimento (200,039 clientes). Modelo de uplift: `S-learner`.
 
 ## Premissas (em rublos)

@@ -1,6 +1,6 @@
 # Prova de escala: o placar na Criteo
 
-Gerado por `campanha escala`. As mesmas consultas do placar da X5 (sorteio, balanço com
+Gerado por `persuadables escala`. As mesmas consultas do placar da X5 (sorteio, balanço com
 `UNPIVOT`, efeito com IC e CUPED), reescritas para a Criteo Uplift v2.1 em
 `sql/30_escala_criteo/`.
 

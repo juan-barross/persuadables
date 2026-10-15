@@ -9,7 +9,7 @@ import statsmodels.api as sm
 from matplotlib.axes import Axes
 from scipy import stats as st
 
-from campanha import graficos, relatorio, run_sql, stats
+from persuadables import graficos, relatorio, run_sql, stats
 
 EM_PP = 100
 Q_SIGNIFICATIVO = 0.05

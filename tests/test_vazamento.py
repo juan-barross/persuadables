@@ -8,7 +8,7 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal
 
-from campanha import run_sql
+from persuadables import run_sql
 
 CORTE = pd.Timestamp(run_sql.DATA_DE_CORTE)
 CORTE_SQL = f"TIMESTAMP '{CORTE}'"

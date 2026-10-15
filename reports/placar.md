@@ -1,6 +1,6 @@
 # Placar do experimento
 
-Gerado por `campanha placar` a partir de `sql/20_placar_experimento/`. Desfecho: `target`
+Gerado por `persuadables placar` a partir de `sql/20_placar_experimento/`. Desfecho: `target`
 (comprou depois da comunicação). Tratados: 99,981. Controle: 100,058.
 
 ## 1. O sorteio está são?

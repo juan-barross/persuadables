@@ -9,7 +9,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from campanha import decisao, placar, run_sql, uplift
+from persuadables import decisao, placar, run_sql, uplift
 
 
 @dataclass

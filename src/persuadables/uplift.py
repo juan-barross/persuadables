@@ -10,7 +10,7 @@ from sklearn.model_selection import train_test_split
 from sklift.metrics import qini_auc_score, qini_curve, uplift_at_k, uplift_auc_score
 from sklift.models import ClassTransformation, SoloModel, TwoModels
 
-from campanha import graficos, relatorio, stats
+from persuadables import graficos, relatorio, stats
 
 SEMENTE = 42
 EM_PP = 100

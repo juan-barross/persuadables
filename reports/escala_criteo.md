@@ -1,20 +1,20 @@
 # Prova de escala: o placar na Criteo
 
-Gerado por `campanha escala`. As mesmas consultas do placar da X5 (sorteio, balanço com
+Gerado por `persuadables escala`. As mesmas consultas do placar da X5 (sorteio, balanço com
 `UNPIVOT`, efeito com IC e CUPED), reescritas para a Criteo Uplift v2.1 em
 `sql/30_escala_criteo/`.
 
 ## Tempo e memória
 
-**13,979,592 linhas, 4.4 s no total, pico de memória do processo de 1,359 MB**,
+**13,979,592 linhas, 5.4 s no total, pico de memória do processo de 920 MB**,
 lendo direto de um Parquet de 177 MB.
 
 | consulta | segundos | linhas_por_segundo_mi | pico_memoria_processo_mb |
 |---|---|---|---|
-| 01_sorteio | 0.08 | 166.81 | 1,359.45 |
-| 02_balanco | 2.31 | 6.05 | 1,359.45 |
-| 03_efeito | 0.49 | 28.26 | 1,359.45 |
-| 04_cuped | 1.56 | 8.97 | 1,359.45 |
+| 01_sorteio | 0.13 | 109.86 | 920.46 |
+| 02_balanco | 2.86 | 4.89 | 920.46 |
+| 03_efeito | 0.53 | 26.55 | 920.46 |
+| 04_cuped | 1.91 | 7.32 | 920.46 |
 
 Máquina: Windows 11, 8 CPUs lógicas, 4 GB de RAM,
 DuckDB 1.5.6 com 8 threads. O pico é do processo Python inteiro

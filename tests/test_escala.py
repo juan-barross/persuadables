@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from campanha import run_sql, stats
+from persuadables import run_sql, stats
 
 
 @pytest.fixture(scope="module")

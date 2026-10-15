@@ -11,7 +11,7 @@ da memória de um notebook comum. O projeto precisa de SQL de verdade (janelas,
 ## Decisão
 
 - CSV.gz é convertido uma vez para Parquet com zstd pelo próprio DuckDB
-  (`src/campanha/ingest.py`). `purchases` cai de 638 MB (gz) para 466 MB, com tipos.
+  (`src/persuadables/ingest.py`). `purchases` cai de 638 MB (gz) para 466 MB, com tipos.
 - As consultas leem o Parquet por views (`run_sql.conectar`), sem carregar tudo em memória.
 - Os `.sql` ficam em `sql/` e rodam em ordem pelo `run_sql.py`, de modo que qualquer
   pessoa pode ler e reexecutar a análise sem abrir um notebook.

@@ -1,6 +1,6 @@
 # Auditoria dos dados da X5
 
-Gerado por `campanha auditar` sobre `data/parquet`. Data de corte: 2019-03-19.
+Gerado por `persuadables auditar` sobre `data/parquet`. Data de corte: 2019-03-19.
 
 ## 01_contagens
 
