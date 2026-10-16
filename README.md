@@ -111,7 +111,11 @@ uv run pytest
 - O pipeline inteiro roda na amostra: nenhuma linha some entre as etapas e o efeito plantado
   aparece no segmento certo.
 
-A CI roda ruff, sqlfluff, os testes e o pipeline completo na amostra.
+- Cada módulo tem testes de unidade com dados pequenos e conhecidos: formatação dos relatórios,
+  conversão para Parquet, conta do lucro, divisão estratificada, escolha do modelo e a CLI.
+
+São 53 testes, que rodam em cerca de um minuto. A CI roda ruff, sqlfluff, os testes e o
+pipeline completo na amostra.
 
 ## Desempenho
 
@@ -119,7 +123,7 @@ Num notebook Windows com 8 CPUs lógicas e 4 GB de RAM, lendo direto do Parquet:
 
 | Etapa | Linhas | Tempo |
 |---|---:|---:|
-| Placar completo na Criteo | 13.979.592 | 5,2 s (pico de 171 MB) |
+| Placar completo na Criteo | 13.979.592 | 5 a 14 s, conforme a carga da máquina (pico de 110 a 170 MB) |
 | Auditoria da X5 | 45.786.568 itens | cerca de 80 s |
 | Perfil do cliente | 45.786.568 itens | cerca de 20 s |
 | Amostra sintética | 120 mil itens | 0,6 s |
