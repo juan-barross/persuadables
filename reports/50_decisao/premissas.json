@@ -4,7 +4,7 @@
   "compras_por_comprador": 1.0,
   "ticket": null,
   "ticket_base": 495.7832219112881,
-  "valor_por_comprador": 99.15664438225762,
   "n_base": 200039,
-  "modelo_uplift": "S-learner"
+  "modelo_uplift": "S-learner",
+  "valor_por_comprador": 99.15664438225762
 }

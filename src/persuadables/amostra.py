@@ -18,21 +18,11 @@ EFEITO_PLANTADO_NOS_INATIVOS = 0.15
 VALOR_DAS_COMPRAS_FUTURAS = 50_000.0
 IDADES_IMPOSSIVEIS = [150, -1, 3, 999, 120]
 
-COLUNAS_DE_PURCHASES = [
-    "client_id",
-    "transaction_id",
-    "transaction_datetime",
-    "regular_points_received",
-    "express_points_received",
-    "regular_points_spent",
-    "express_points_spent",
-    "purchase_sum",
-    "store_id",
-    "product_id",
-    "product_quantity",
-    "trn_sum_from_iss",
-    "trn_sum_from_red",
-]
+COLUNAS_DE_PURCHASES = (
+    "client_id transaction_id transaction_datetime regular_points_received "
+    "express_points_received regular_points_spent express_points_spent purchase_sum store_id "
+    "product_id product_quantity trn_sum_from_iss trn_sum_from_red"
+).split()
 
 
 def gerar(destino: Path, n_clientes: int = 3000, semente: int = 7) -> Path:
