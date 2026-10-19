@@ -7,10 +7,10 @@ import pandas as pd
 import typer
 from rich.console import Console
 
+from persuadables import agente, ingest, relatorio, run_sql
 from persuadables import amostra as amostra_sintetica
 from persuadables import decisao as decisao_de_orcamento
 from persuadables import escala as prova_de_escala
-from persuadables import ingest, relatorio, run_sql
 from persuadables import placar as placar_do_experimento
 from persuadables import uplift as modelos_de_uplift
 
@@ -99,6 +99,19 @@ def escala() -> None:
         return
     r = prova_de_escala.rodar(conexao(), pastas["reports"], pastas["parquet"])
     console.print(f"{r.linhas:,} linhas: {r.segundos:.1f} s, pico {r.pico_memoria_mb:,.0f} MB")
+
+
+@app.command(help="Responde uma pergunta do CRM com o agente (precisa de chave de API).")
+def perguntar(pergunta: str) -> None:
+    resposta = agente.perguntar(pergunta)
+    console.print(resposta.texto)
+    console.print(f"[dim]{resposta.tokens_entrada + resposta.tokens_saida:,} tokens[/dim]")
+
+
+@app.command(name="avaliar-agente", help="Mede o agente contra respostas conhecidas.")
+def avaliar_agente() -> None:
+    avaliacao = agente.avaliar()
+    console.print(f"{avaliacao['acertou'].sum()} de {len(avaliacao)} acertos (reports/agente.md)")
 
 
 @app.command(help="Roda o pipeline inteiro, dos dados à prova de escala.")

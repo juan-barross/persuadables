@@ -18,7 +18,7 @@ def salvar_csv(df: pd.DataFrame, caminho: Path) -> None:
     df.to_csv(caminho, index=False, float_format=DIGITOS_SIGNIFICATIVOS)
 
 
-def preencher(modelo: str, **valores: object) -> str:
+def preencher(modelo: str, /, **valores: object) -> str:
     texto = (MODELOS / f"{modelo}.md").read_text(encoding="utf-8")
     return texto.format(**valores)
 

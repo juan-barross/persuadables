@@ -44,6 +44,16 @@ Com os dados reais (cerca de 650 MB da X5 e 310 MB da Criteo), `uv run persuadab
 Cada etapa também roda sozinha: `baixar`, `auditar`, `perfil`, `placar`, `uplift`,
 `decisao --custo 3 --margem 0.2` e `escala`.
 
+Para perguntar ao agente, copie `.env.example` para `.env`, coloque uma chave da OpenRouter (ou
+defina `ANTHROPIC_API_KEY`) e rode:
+
+```bash
+uv run --env-file .env persuadables perguntar "Qual o lucro mandando por uplift para 20% da base com contato a 4 rublos?"
+```
+
+`uv run --env-file .env persuadables avaliar-agente` roda as dez perguntas de resposta conhecida
+e grava `reports/agente.md` com os acertos, os tokens e o custo.
+
 ## Como foi feito
 
 | Etapa | Código | Saída |
@@ -54,6 +64,7 @@ Cada etapa também roda sozinha: `baixar`, `auditar`, `perfil`, `placar`, `uplif
 | Uplift | [`uplift.py`](src/persuadables/uplift.py) | [`reports/uplift.md`](reports/uplift.md): propensão contra S-, T-, X-learner e class transformation |
 | Decisão | [`decisao.py`](src/persuadables/decisao.py) | [`reports/decisao.md`](reports/decisao.md): compradores e lucro por orçamento, com IC e sensibilidade |
 | Escala | [`sql/30_escala_criteo`](sql/30_escala_criteo) | [`reports/escala_criteo.md`](reports/escala_criteo.md): o mesmo placar em 14 milhões de linhas |
+| Agente do CRM | [`agente.py`](src/persuadables/agente.py) | Opus 5.5 responde perguntas do gerente consultando os relatórios e a conta de lucro, com avaliação contra respostas conhecidas ([ADR 0005](docs/adr/0005-agente-do-crm.md)) |
 
 As decisões de projeto estão em [`docs/adr`](docs/adr).
 
@@ -114,7 +125,10 @@ uv run pytest
 - Cada módulo tem testes de unidade com dados pequenos e conhecidos: formatação dos relatórios,
   conversão para Parquet, conta do lucro, divisão estratificada, escolha do modelo e a CLI.
 
-São 53 testes, que rodam em cerca de um minuto. A CI roda ruff, sqlfluff, os testes e o
+- O agente é testado com um cliente simulado: as ferramentas, o laço de chamadas e a contagem
+  de acertos rodam sem gastar chave.
+
+São 62 testes. A CI roda ruff, sqlfluff, os testes e o
 pipeline completo na amostra.
 
 ## Desempenho
