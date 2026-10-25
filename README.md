@@ -1,33 +1,38 @@
 # Persuadables
 
-Um varejista mandou uma comunicação para metade de 200 mil clientes, escolhidos por sorteio.
-Aqui eu leio esse experimento, descubro em quem a campanha muda o comportamento e transformo
-isso numa decisão de orçamento. Os dados são reais (X5 RetailHero, 45,8 milhões de itens
-comprados), o perfil dos clientes é montado em SQL e o resultado sai em rublos.
+Análise de um teste de campanha de um varejista russo (X5 RetailHero): 200 mil clientes,
+metade sorteada para receber a comunicação, e 45,8 milhões de itens comprados antes dela.
+Monto o perfil dos clientes em SQL, leio o experimento, treino modelos de uplift e traduzo o
+resultado em quanto mandar e para quem.
 
-Em uplift, *persuadables* são os clientes que só compram se receberem a campanha. São eles
-que este projeto procura.
+O nome vem do termo de uplift para quem só compra se receber a campanha.
 
 ![Orçamento contra compradores incrementais](reports/figuras/orcamento_vs_incrementais.png)
 
 ## Resultado
 
-| Pergunta | Resposta |
-|---|---|
-| A campanha funciona? | Sim, pouco. A taxa de compra vai de 60,3% para 63,7%: +3,3 p.p. (IC 95% de 2,9 a 3,7). |
-| Para quem? | Para quem gasta pouco, compra pouco e está há mais dias sem comprar. No decil que menos gasta o efeito é +7,2 p.p.; no que mais gasta, perto de 1 p.p. |
-| Mandar para os melhores clientes funciona? | Não. O modelo de propensão põe no topo quem compraria mais de 95% das vezes sem campanha. Nos 30% que ele escolhe o efeito é de 1,9 p.p., abaixo do envio aleatório. |
-| E um modelo de uplift? | Nos 30% de maior score o efeito é de 5,4 p.p., e esses clientes concentram 48% dos compradores incrementais. |
-| Dá para perguntar em português? | Sim. O agente do CRM acertou 9 de 10 perguntas de resposta conhecida rodando num modelo gratuito (Nemotron 3 Ultra, pela OpenRouter); errou a mais difícil, que pede comparar 20 orçamentos ([`reports/agente.md`](reports/agente.md)). |
-| Quanto vale? | Com ₽ 3 por contato e margem de 20%, mandar por uplift para 15% da base dá ₽ 160 mil de lucro incremental (IC de 84 a 232 mil). Mandar para todos dá ₽ 59 mil, com quase sete vezes mais contatos. |
+A campanha subiu a taxa de compra de 60,3% para 63,7%, um efeito de 3,3 p.p. (IC 95% de 2,9
+a 3,7). Quase todo mundo que comprou depois da mensagem compraria de qualquer jeito.
 
-A recomendação para o gerente de CRM, com riscos, está no [memorando de uma página](docs/memorando.md).
-O simulador em Streamlit deixa mudar custo, ticket, margem e orçamento.
+O efeito se concentra em quem gastava pouco e estava há mais dias sem comprar: +7,2 p.p. no
+decil de menor gasto e cerca de 1 p.p. no de maior. Por isso escolher os "melhores clientes"
+dá errado. O modelo de propensão põe no topo quem compra mais de 95% das vezes sem campanha,
+e nos 30% que ele escolhe o efeito é de 1,9 p.p., menos que mandar ao acaso. O S-learner acha
+5,4 p.p. nos seus 30% e reúne ali 48% dos compradores incrementais.
 
-## Rodar em um minuto
+Com ₽ 3 por contato e margem de 20%, mandar por uplift para 15% da base dá ₽ 160 mil de lucro
+incremental (IC de 84 a 232 mil). Mandar para todos dá ₽ 59 mil, com quase sete vezes mais
+contatos. A recomendação para o CRM está no [memorando](docs/memorando.md), e o simulador em
+Streamlit refaz a conta com outras premissas.
 
-Precisa de Python 3.12 e [uv](https://docs.astral.sh/uv/). Sem baixar nada, com uma amostra
-sintética que tem as mesmas anomalias da base real:
+Há também um agente que responde perguntas do gerente usando os relatórios e a conta de lucro.
+Num modelo gratuito (Nemotron 3 Ultra, pela OpenRouter) ele acertou 9 de 10 perguntas com
+resposta conhecida; errou a que pede comparar 20 orçamentos ([`reports/agente.md`](reports/agente.md)).
+
+## Rodar
+
+Precisa de Python 3.12 e [uv](https://docs.astral.sh/uv/). Sem baixar nada, numa amostra
+sintética com as mesmas anomalias da base real:
 
 ```bash
 uv sync --all-extras
@@ -41,39 +46,36 @@ uv run persuadables --amostra tudo
 uv run streamlit run app/streamlit_app.py
 ```
 
-Com os dados reais (cerca de 650 MB da X5 e 310 MB da Criteo), `uv run persuadables tudo`.
-Cada etapa também roda sozinha: `baixar`, `auditar`, `perfil`, `placar`, `uplift`,
-`decisao --custo 3 --margem 0.2` e `escala`.
+Com os dados reais (cerca de 650 MB da X5 e 310 MB da Criteo), `uv run persuadables tudo`. As
+etapas também rodam sozinhas: `baixar`, `auditar`, `perfil`, `placar`, `uplift`, `decisao` e
+`escala`.
 
-Para perguntar ao agente, copie `.env.example` para `.env`, coloque uma chave da OpenRouter (ou
-defina `ANTHROPIC_API_KEY`) e rode:
+Para o agente, copie `.env.example` para `.env` com uma chave da OpenRouter:
 
 ```bash
 uv run --env-file .env persuadables perguntar "Qual o lucro mandando por uplift para 20% da base com contato a 4 rublos?"
 ```
 
-`uv run --env-file .env persuadables avaliar-agente` roda as dez perguntas de resposta conhecida
-e grava `reports/agente.md` com os acertos, os tokens e o custo.
+`avaliar-agente` roda as dez perguntas de teste. O modelo padrão é o Opus 5.5 e muda com
+`PERSUADABLES_MODELO`.
 
-## Como foi feito
+## Estrutura
 
 | Etapa | Código | Saída |
 |---|---|---|
-| Auditoria | [`sql/00_auditoria`](sql/00_auditoria) | [`reports/auditoria.md`](reports/auditoria.md): chaves, datas, valores e distribuições |
-| Perfil do cliente | [`sql/10_perfil_cliente`](sql/10_perfil_cliente) | 36 variáveis por cliente, só com dados anteriores à campanha: recência com `LAG`, gasto em janelas com `FILTER`, tendência em meses móveis, decis com `NTILE` |
-| Placar do experimento | [`sql/20_placar_experimento`](sql/20_placar_experimento), [`placar.py`](src/persuadables/placar.py) | [`reports/placar.md`](reports/placar.md): sorteio, balanço, efeito com IC, CUPED, poder e segmentos com Benjamini-Hochberg |
-| Uplift | [`uplift.py`](src/persuadables/uplift.py) | [`reports/uplift.md`](reports/uplift.md): propensão contra S-, T-, X-learner e class transformation |
-| Decisão | [`decisao.py`](src/persuadables/decisao.py) | [`reports/decisao.md`](reports/decisao.md): compradores e lucro por orçamento, com IC e sensibilidade |
-| Escala | [`sql/30_escala_criteo`](sql/30_escala_criteo) | [`reports/escala_criteo.md`](reports/escala_criteo.md): o mesmo placar em 14 milhões de linhas |
-| Agente do CRM | [`agente.py`](src/persuadables/agente.py) | Opus 5.5 responde perguntas do gerente consultando os relatórios e a conta de lucro, com avaliação contra respostas conhecidas ([ADR 0005](docs/adr/0005-agente-do-crm.md)) |
+| Auditoria | [`sql/00_auditoria`](sql/00_auditoria) | [`auditoria.md`](reports/auditoria.md) |
+| Perfil do cliente | [`sql/10_perfil_cliente`](sql/10_perfil_cliente) | 36 variáveis por cliente, só com dados anteriores à campanha |
+| Placar do experimento | [`sql/20_placar_experimento`](sql/20_placar_experimento), [`placar.py`](src/persuadables/placar.py) | [`placar.md`](reports/placar.md): sorteio, balanço, IC, CUPED, poder, segmentos com BH |
+| Uplift | [`uplift.py`](src/persuadables/uplift.py) | [`uplift.md`](reports/uplift.md): propensão contra S-, T-, X-learner e class transformation |
+| Decisão | [`decisao.py`](src/persuadables/decisao.py) | [`decisao.md`](reports/decisao.md): lucro por orçamento, com IC e sensibilidade |
+| Escala | [`sql/30_escala_criteo`](sql/30_escala_criteo) | [`escala_criteo.md`](reports/escala_criteo.md): o mesmo placar em 14 milhões de linhas |
+| Agente | [`agente.py`](src/persuadables/agente.py) | [`agente.md`](reports/agente.md) |
 
 As decisões de projeto estão em [`docs/adr`](docs/adr).
 
-### Modelos (conjunto de teste, 40 mil clientes)
-
-| Modelo | AUUC | Qini | Efeito nos 30% de maior score | Incrementais nos 30% |
+| Modelo (teste, 40 mil clientes) | AUUC | Qini | Efeito nos 30% de maior score | Incrementais nos 30% |
 |---|---:|---:|---:|---:|
-| S-learner (escolhido na validação) | 0,015 | 0,009 | +5,4 p.p. | 48% |
+| S-learner | 0,015 | 0,009 | +5,4 p.p. | 48% |
 | X-learner | 0,014 | 0,009 | +5,3 p.p. | 47% |
 | T-learner | 0,010 | 0,006 | +4,9 p.p. | 44% |
 | Class transformation | 0,007 | 0,004 | +4,3 p.p. | 39% |
@@ -81,96 +83,54 @@ As decisões de projeto estão em [`docs/adr`](docs/adr).
 
 ![Curva Qini](reports/figuras/curva_qini.png)
 
-Os 20% com maior uplift previsto, comparados aos 20% com menor, têm mediana de 9 compras
-contra 32, gastaram 2,8 mil rublos contra 13,1 mil, estão há 7,4 dias sem comprar contra 2,5
-e têm 58 anos contra 40. Sem campanha, 46% deles comprariam; no outro grupo, 73%.
-
 ![Efeito por segmento](reports/figuras/efeito_por_segmento.png)
 
-## O que deu errado no caminho
+## Problemas que apareceram
 
-- Não há compra depois da data de corte, mas 44.953 clientes têm o primeiro resgate de pontos
-  depois dela. Usar essa data seria olhar o futuro, então ela vira nulo no perfil.
-- `purchase_sum` é o valor da compra repetido em cada item. Somar direto multiplica o gasto
-  pelo número de itens; o perfil agrega primeiro por transação.
-- 28 `transaction_id` aparecem com dois clientes, duas lojas e dois horários. Agrupando só
-  pelo id, a contagem por dia da semana mudava de uma execução para outra. O grão passou a
-  ser cliente mais transação.
-- O plano previa olhar inativos há mais de 30 dias, mas todo cliente do experimento comprou
-  nos 23 dias anteriores ao corte. O recorte virou 14 dias e quartis de recência.
-- Na Criteo, o CUPED com `UNPIVOT` e `JOIN` estourou os 4 GB do notebook. Reescrito com
-  estatísticas suficientes (n, Σy, Σy², Σx, Σx², Σxy por grupo), roda em 2,6 s e bate com a
-  versão em Python até a sexta casa decimal.
-- O saldo da OpenRouter acabou no meio da avaliação do agente com Opus 5.5, e o modelo gratuito
-  esbarrou no limite de 50 pedidos por dia. O cliente passou a tentar de novo até 8 vezes, e o
-  relatório do agente pode ser refeito a partir do CSV da avaliação, sem chamar a API.
-- O `sqlfluff fix` trocou `COUNT(DISTINCT (a, b))` por `COUNT(DISTINCT a, b)`, que o DuckDB
-  não aceita. Só apareceu porque a auditoria roda de novo depois de cada mudança.
-- O perfil mudava em até 1e-10 entre execuções, porque o DuckDB soma `DOUBLE` em paralelo em
-  ordem variável. Parece nada, mas mudava os splits do LightGBM e levava o melhor orçamento de
-  30% para 15% da base. Com valores em `DECIMAL` e intervalos em horas inteiras, duas execuções
-  dão relatórios idênticos, e um teste garante isso.
+- 44.953 clientes têm o primeiro resgate de pontos depois da data de corte. Essa data vira nulo
+  no perfil, senão o modelo olharia o futuro.
+- `purchase_sum` se repete em cada item da compra. O perfil agrega por transação antes de somar.
+- 28 `transaction_id` repetem em clientes diferentes. Agrupando só pelo id, a auditoria mudava
+  de uma execução para outra; o grão passou a ser cliente e transação.
+- Todos os clientes do teste compraram nos 23 dias antes do corte, então não havia "inativos há
+  mais de 30 dias". Usei 14 dias e quartis de recência.
+- O CUPED na Criteo estourou os 4 GB de RAM com `UNPIVOT` e `JOIN`. Reescrito com somas por
+  grupo (n, Σy, Σy², Σx, Σx², Σxy), roda em segundos e bate com a versão em Python.
+- O `sqlfluff fix` reescreveu um `COUNT(DISTINCT (a, b))` de um jeito que o DuckDB não aceita.
+- Somas de `DOUBLE` em paralelo mudavam o perfil em 1e-10 a cada execução, o suficiente para o
+  LightGBM mudar e o melhor orçamento pular de 30% para 15%. Com `DECIMAL` e horas inteiras, o
+  resultado ficou estável, e um teste confere isso.
+- O saldo da OpenRouter acabou no meio da avaliação com Opus 5.5 e o modelo gratuito tem limite
+  de 50 pedidos por dia. O cliente tenta de novo até 8 vezes e o relatório pode ser refeito a
+  partir do CSV salvo.
 
 ## Testes
 
-```bash
-uv run pytest
-```
+`uv run pytest` roda 63 testes. Os principais:
 
-- O teste de vazamento foi escrito antes do perfil: apagar ou alterar tudo o que aconteceu a
-  partir da data de corte não pode mudar uma casa decimal do perfil. Como a base real não tem
-  compras futuras, ele roda numa amostra sintética com compras plantadas depois do corte e uma
-  no instante exato do corte. Trocando `<` por `<=` no SQL, ele falha.
-- A estatística é conferida contra statsmodels e contra simulação.
-- O SQL da Criteo é conferido contra a mesma conta em Python.
-- O pipeline inteiro roda na amostra: nenhuma linha some entre as etapas e o efeito plantado
-  aparece no segmento certo.
+- Vazamento: apagar ou alterar tudo depois da data de corte não pode mudar o perfil. Roda numa
+  amostra com compras plantadas no futuro e uma no instante exato do corte.
+- Estatística conferida contra statsmodels e simulação, e o SQL da Criteo contra Python.
+- O pipeline inteiro na amostra, sem perder linhas, com o efeito plantado no segmento certo.
+- O agente com um cliente simulado, sem gastar chave.
 
-- Cada módulo tem testes de unidade com dados pequenos e conhecidos: formatação dos relatórios,
-  conversão para Parquet, conta do lucro, divisão estratificada, escolha do modelo e a CLI.
-
-- O agente é testado com um cliente simulado: as ferramentas, o laço de chamadas e a contagem
-  de acertos rodam sem gastar chave.
-
-São 63 testes. A CI roda ruff, sqlfluff, os testes e o
-pipeline completo na amostra.
-
-## Desempenho
-
-Num notebook Windows com 8 CPUs lógicas e 4 GB de RAM, lendo direto do Parquet:
-
-| Etapa | Linhas | Tempo |
-|---|---:|---:|
-| Placar completo na Criteo | 13.979.592 | 5 a 14 s, conforme a carga da máquina (pico de 110 a 170 MB) |
-| Auditoria da X5 | 45.786.568 itens | cerca de 80 s |
-| Perfil do cliente | 45.786.568 itens | cerca de 20 s |
-| Amostra sintética | 120 mil itens | 0,6 s |
-| Bootstrap da decisão (500 reamostras, 3 estratégias) | 40 mil clientes | 1,9 s |
-
-Na Criteo a visita sobe 1,03 p.p. (+27%) e a conversão 0,115 p.p. (+59%). O tratamento é
-`treatment`, que foi sorteado, e não `exposure`, que depende do usuário.
+A CI roda ruff, sqlfluff, os testes e o pipeline na amostra. Num notebook com 4 GB de RAM, a
+auditoria das 45,8 milhões de linhas leva cerca de 80 s, o perfil 20 s e o placar na Criteo
+(14 milhões de linhas) de 5 a 14 s.
 
 ## Limitações
 
-- Uma campanha só, de março de 2019. Antes de usar em produção, o certo é repetir o teste com
-  um grupo de controle aleatório dentro do público escolhido.
-- A base diz se o cliente comprou depois, não quanto. Não dá para saber se a campanha trocou
-  compras grandes por pequenas ([ADR 0002](docs/adr/0002-desfecho-e-protecao.md)).
-- Custo por contato e margem são premissas. A sensibilidade está em
-  [`reports/decisao.md`](reports/decisao.md) e no simulador.
-- Todos os clientes do experimento tinham comprado nas três semanas anteriores.
+- Uma campanha só, de março de 2019. Antes de usar de verdade, repetiria o teste com um grupo de
+  controle dentro do público escolhido.
+- A base diz se o cliente comprou, não quanto gastou ([ADR 0002](docs/adr/0002-desfecho-e-protecao.md)).
+- Custo por contato e margem são premissas; a sensibilidade está em [`decisao.md`](reports/decisao.md).
 
-## Dados e licença
+## Dados
 
 - X5 RetailHero, via [scikit-uplift](https://www.uplift-modeling.com/en/latest/api/datasets/fetch_x5.html)
-  (competição original na [ods.ai](https://ods.ai/competitions/x5-retailhero-uplift-modeling/data)).
-  Não encontrei licença publicada, então os dados não estão no repositório; `persuadables baixar`
-  busca na fonte.
-- Criteo Uplift v2.1 ([Criteo AI Lab](https://ailab.criteo.com/?p=859)), CC BY-NC-SA 4.0.
-  Diemert, Betlei, Renaudin e Amini, *A Large Scale Benchmark for Uplift Modeling*, AdKDD 2018.
-  O link usado pelo scikit-uplift dava 404 em outubro de 2026; o download usa o
-  [espelho da libuplift](https://github.com/jszymon/uplift_sklearn_data/releases) e confere as
-  13.979.592 linhas.
+  ([competição original](https://ods.ai/competitions/x5-retailhero-uplift-modeling/data)). Sem
+  licença publicada, então os dados não estão aqui; `persuadables baixar` busca na fonte.
+- Criteo Uplift v2.1 ([página oficial](https://ailab.criteo.com/?p=859)), CC BY-NC-SA 4.0,
+  baixada de um [espelho](https://github.com/jszymon/uplift_sklearn_data/releases) porque o link
+  original dava 404. Diemert et al., *A Large Scale Benchmark for Uplift Modeling*, AdKDD 2018.
 - Código sob licença MIT.
-
-DuckDB, Python 3.12, uv, pandas, statsmodels, scikit-uplift, LightGBM, Streamlit, pytest, ruff e sqlfluff.

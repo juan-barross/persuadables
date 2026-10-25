@@ -19,18 +19,9 @@ MODELO = os.environ.get(
 REPORTS = Path(__file__).resolve().parents[2] / "reports"
 MAX_VOLTAS = 8
 MAX_LINHAS = 50
-TOLERANCIA = 0.01
 TENTATIVAS = 8
+TOLERANCIA = 0.01
 DOLARES_POR_MILHAO = {"entrada": 4.0, "saida": 20.0}
-
-
-def custo_em_dolares(modelo: str, tokens_entrada: int, tokens_saida: int) -> float:
-    if modelo.endswith(":free"):
-        return 0.0
-    precos = DOLARES_POR_MILHAO
-    return (tokens_entrada * precos["entrada"] + tokens_saida * precos["saida"]) / 1e6
-
-
 TABELAS = {
     "efeito": "20_placar_experimento/03_efeito.csv",
     "segmentos": "20_placar_experimento/05_segmentos_bh.csv",
@@ -39,7 +30,6 @@ TABELAS = {
     "influenciados": "40_uplift/quem_e_influenciado.csv",
     "curvas": "50_decisao/curvas.csv",
 }
-
 SISTEMA = (
     "Você é analista de CRM e responde perguntas do gerente sobre um teste de campanha da X5 "
     "com 200 mil clientes sorteados. Use as ferramentas: `consultar` lê as tabelas de "
@@ -57,40 +47,41 @@ class Resposta:
     tokens_saida: int
 
 
+def ferramenta(nome: str, descricao: str, **campos: dict) -> dict:
+    return {
+        "name": nome,
+        "description": descricao,
+        "strict": True,
+        "input_schema": {
+            "type": "object",
+            "properties": campos,
+            "required": list(campos),
+            "additionalProperties": False,
+        },
+    }
+
+
 def ferramentas(reports: Path = REPORTS) -> list[dict]:
     tabelas = "; ".join(
         f"{nome}({', '.join(pd.read_csv(reports / arquivo, nrows=0).columns)})"
         for nome, arquivo in TABELAS.items()
     )
+    numero = {"type": "number"}
     return [
-        {
-            "name": "consultar",
-            "description": f"Executa um SELECT (DuckDB) nas tabelas: {tabelas}.",
-            "strict": True,
-            "input_schema": {
-                "type": "object",
-                "properties": {"sql": {"type": "string"}},
-                "required": ["sql"],
-                "additionalProperties": False,
-            },
-        },
-        {
-            "name": "lucro",
-            "description": "Compradores incrementais e lucro de mandar a campanha para uma "
-            "fração da base, ordenada por uma estratégia. Frações de 0.05 a 1.0, de 0.05 em 0.05.",
-            "strict": True,
-            "input_schema": {
-                "type": "object",
-                "properties": {
-                    "estrategia": {"type": "string", "enum": ["aleatório", "propensão", "uplift"]},
-                    "fracao": {"type": "number"},
-                    "custo_por_contato": {"type": "number"},
-                    "margem": {"type": "number"},
-                },
-                "required": ["estrategia", "fracao", "custo_por_contato", "margem"],
-                "additionalProperties": False,
-            },
-        },
+        ferramenta(
+            "consultar",
+            f"Executa um SELECT (DuckDB) nas tabelas: {tabelas}.",
+            sql={"type": "string"},
+        ),
+        ferramenta(
+            "lucro",
+            "Compradores incrementais e lucro de mandar a campanha para uma fração da base, "
+            "ordenada por uma estratégia. Frações de 0.05 a 1.0, de 0.05 em 0.05.",
+            estrategia={"type": "string", "enum": ["aleatório", "propensão", "uplift"]},
+            fracao=numero,
+            custo_por_contato=numero,
+            margem=numero,
+        ),
     ]
 
 
@@ -162,7 +153,6 @@ def perguntar(pergunta: str, cliente=None, reports: Path = REPORTS) -> Resposta:
         if r.stop_reason != "tool_use":
             texto = "".join(bloco.text for bloco in r.content if bloco.type == "text")
             return Resposta(texto, extrair_valor(texto), entrada, saida)
-        mensagens.append({"role": "assistant", "content": r.content})
         resultados = [
             {
                 "type": "tool_result",
@@ -172,7 +162,10 @@ def perguntar(pergunta: str, cliente=None, reports: Path = REPORTS) -> Resposta:
             for bloco in r.content
             if bloco.type == "tool_use"
         ]
-        mensagens.append({"role": "user", "content": resultados})
+        mensagens += [
+            {"role": "assistant", "content": r.content},
+            {"role": "user", "content": resultados},
+        ]
     return Resposta("", None, entrada, saida)
 
 
@@ -180,57 +173,49 @@ def gabarito(reports: Path = REPORTS) -> list[tuple[str, float]]:
     tabela = {nome: pd.read_csv(reports / arquivo) for nome, arquivo in TABELAS.items()}
     efeito = tabela["efeito"].iloc[0]
     segmentos = tabela["segmentos"].set_index(["segmento", "nivel"])["efeito_pp"]
-    modelos = tabela["modelos"].query("conjunto == 'teste'").set_index("modelo")
-    influenciados = tabela["influenciados"].set_index("grupo")
-    curvas = tabela["curvas"].set_index(["estrategia", "fracao"])
+    auuc = tabela["modelos"].query("conjunto == 'teste'").set_index("modelo")["auuc"]
+    idade = tabela["influenciados"].set_index("grupo")["idade"]
+    curvas = tabela["curvas"].set_index(["estrategia", "fracao"])["incrementais"]
     lucro_a_6 = {f: lucro("uplift", f, 6.0, 0.2, reports)["lucro"] for f in decisao.FRACOES}
-    return [
-        (
-            "Qual foi o efeito médio da campanha na taxa de compra, em pontos percentuais?",
-            efeito["efeito_pp"],
+    perguntas = {
+        "Qual foi o efeito médio da campanha na taxa de compra, em pontos percentuais?": efeito[
+            "efeito_pp"
+        ],
+        "Quantos compradores a mais a campanha gerou entre os clientes tratados?": efeito[
+            "compras_incrementais"
+        ],
+        "Qual o efeito da campanha, em p.p., no decil de clientes que menos gastavam antes?": (
+            segmentos[("decil_gasto", "D01")]
         ),
-        (
-            "Quantos compradores a mais a campanha gerou entre os clientes tratados?",
-            efeito["compras_incrementais"],
-        ),
-        (
-            "Qual o efeito da campanha, em p.p., no decil de clientes que menos gastavam antes?",
-            segmentos[("decil_gasto", "D01")],
-        ),
-        ("Qual a AUUC do S-learner no conjunto de teste?", modelos.loc["S-learner", "auuc"]),
-        (
-            "Qual a mediana de idade dos 20% de clientes com maior uplift previsto?",
-            influenciados.loc["20% maior uplift", "idade"],
-        ),
-        (
-            "Quantos compradores a mais teremos mandando por uplift para 20% da base?",
-            curvas.loc[("uplift", 0.2), "incrementais"],
-        ),
-        (
-            "Qual o lucro incremental de mandar por uplift para 15% da base, com contato a 3 "
-            "rublos e margem de 20%?",
-            lucro("uplift", 0.15, 3.0, 0.2, reports)["lucro"],
-        ),
-        (
-            "Com contato a 5 rublos e margem de 25%, qual o lucro de mandar por propensão para "
-            "30% da base?",
-            lucro("propensão", 0.3, 5.0, 0.25, reports)["lucro"],
-        ),
-        (
-            "Qual o lucro de mandar a campanha para a base inteira com contato a 6 rublos e "
-            "margem de 20%?",
-            lucro("uplift", 1.0, 6.0, 0.2, reports)["lucro"],
-        ),
-        (
-            "Com contato a 6 rublos e margem de 20%, qual porcentagem da base devemos contatar "
-            "por uplift para ter o maior lucro? Responda em %.",
-            max(lucro_a_6, key=lucro_a_6.get) * 100,
-        ),
-    ]
+        "Qual a AUUC do S-learner no conjunto de teste?": auuc["S-learner"],
+        "Qual a mediana de idade dos 20% de clientes com maior uplift previsto?": idade[
+            "20% maior uplift"
+        ],
+        "Quantos compradores a mais teremos mandando por uplift para 20% da base?": curvas[
+            ("uplift", 0.2)
+        ],
+        "Qual o lucro incremental de mandar por uplift para 15% da base, com contato a 3 "
+        "rublos e margem de 20%?": lucro("uplift", 0.15, 3.0, 0.2, reports)["lucro"],
+        "Com contato a 5 rublos e margem de 25%, qual o lucro de mandar por propensão para "
+        "30% da base?": lucro("propensão", 0.3, 5.0, 0.25, reports)["lucro"],
+        "Qual o lucro de mandar a campanha para a base inteira com contato a 6 rublos e "
+        "margem de 20%?": lucro("uplift", 1.0, 6.0, 0.2, reports)["lucro"],
+        "Com contato a 6 rublos e margem de 20%, qual porcentagem da base devemos contatar "
+        "por uplift para ter o maior lucro? Responda em %.": 100
+        * max(lucro_a_6, key=lucro_a_6.get),
+    }
+    return list(perguntas.items())
 
 
 def acertou(resposta: float | None, esperado: float) -> bool:
     return resposta is not None and abs(resposta - esperado) <= TOLERANCIA * max(abs(esperado), 1)
+
+
+def custo_em_dolares(modelo: str, tokens_entrada: int, tokens_saida: int) -> float:
+    if modelo.endswith(":free"):
+        return 0.0
+    precos = DOLARES_POR_MILHAO
+    return (tokens_entrada * precos["entrada"] + tokens_saida * precos["saida"]) / 1e6
 
 
 def avaliar(cliente=None, reports: Path = REPORTS) -> pd.DataFrame:
