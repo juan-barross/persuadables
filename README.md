@@ -18,6 +18,7 @@ que este projeto procura.
 | Para quem? | Para quem gasta pouco, compra pouco e está há mais dias sem comprar. No decil que menos gasta o efeito é +7,2 p.p.; no que mais gasta, perto de 1 p.p. |
 | Mandar para os melhores clientes funciona? | Não. O modelo de propensão põe no topo quem compraria mais de 95% das vezes sem campanha. Nos 30% que ele escolhe o efeito é de 1,9 p.p., abaixo do envio aleatório. |
 | E um modelo de uplift? | Nos 30% de maior score o efeito é de 5,4 p.p., e esses clientes concentram 48% dos compradores incrementais. |
+| Dá para perguntar em português? | Sim. O agente do CRM acertou 9 de 10 perguntas de resposta conhecida rodando num modelo gratuito (Nemotron 3 Ultra, pela OpenRouter); errou a mais difícil, que pede comparar 20 orçamentos ([`reports/agente.md`](reports/agente.md)). |
 | Quanto vale? | Com ₽ 3 por contato e margem de 20%, mandar por uplift para 15% da base dá ₽ 160 mil de lucro incremental (IC de 84 a 232 mil). Mandar para todos dá ₽ 59 mil, com quase sete vezes mais contatos. |
 
 A recomendação para o gerente de CRM, com riscos, está no [memorando de uma página](docs/memorando.md).
@@ -100,6 +101,9 @@ e têm 58 anos contra 40. Sem campanha, 46% deles comprariam; no outro grupo, 73
 - Na Criteo, o CUPED com `UNPIVOT` e `JOIN` estourou os 4 GB do notebook. Reescrito com
   estatísticas suficientes (n, Σy, Σy², Σx, Σx², Σxy por grupo), roda em 2,6 s e bate com a
   versão em Python até a sexta casa decimal.
+- O saldo da OpenRouter acabou no meio da avaliação do agente com Opus 5.5, e o modelo gratuito
+  esbarrou no limite de 50 pedidos por dia. O cliente passou a tentar de novo até 8 vezes, e o
+  relatório do agente pode ser refeito a partir do CSV da avaliação, sem chamar a API.
 - O `sqlfluff fix` trocou `COUNT(DISTINCT (a, b))` por `COUNT(DISTINCT a, b)`, que o DuckDB
   não aceita. Só apareceu porque a auditoria roda de novo depois de cada mudança.
 - O perfil mudava em até 1e-10 entre execuções, porque o DuckDB soma `DOUBLE` em paralelo em
@@ -128,7 +132,7 @@ uv run pytest
 - O agente é testado com um cliente simulado: as ferramentas, o laço de chamadas e a contagem
   de acertos rodam sem gastar chave.
 
-São 62 testes. A CI roda ruff, sqlfluff, os testes e o
+São 63 testes. A CI roda ruff, sqlfluff, os testes e o
 pipeline completo na amostra.
 
 ## Desempenho

@@ -20,7 +20,16 @@ REPORTS = Path(__file__).resolve().parents[2] / "reports"
 MAX_VOLTAS = 8
 MAX_LINHAS = 50
 TOLERANCIA = 0.01
+TENTATIVAS = 8
 DOLARES_POR_MILHAO = {"entrada": 4.0, "saida": 20.0}
+
+
+def custo_em_dolares(modelo: str, tokens_entrada: int, tokens_saida: int) -> float:
+    if modelo.endswith(":free"):
+        return 0.0
+    precos = DOLARES_POR_MILHAO
+    return (tokens_entrada * precos["entrada"] + tokens_saida * precos["saida"]) / 1e6
+
 
 TABELAS = {
     "efeito": "20_placar_experimento/03_efeito.csv",
@@ -130,8 +139,10 @@ def extrair_valor(texto: str) -> float | None:
 
 def cliente_padrao() -> anthropic.Anthropic:
     if OPENROUTER:
-        return anthropic.Anthropic(base_url="https://openrouter.ai/api", auth_token=OPENROUTER)
-    return anthropic.Anthropic()
+        return anthropic.Anthropic(
+            base_url="https://openrouter.ai/api", auth_token=OPENROUTER, max_retries=TENTATIVAS
+        )
+    return anthropic.Anthropic(max_retries=TENTATIVAS)
 
 
 def perguntar(pergunta: str, cliente=None, reports: Path = REPORTS) -> Resposta:
@@ -239,21 +250,25 @@ def avaliar(cliente=None, reports: Path = REPORTS) -> pd.DataFrame:
         )
     avaliacao = pd.DataFrame(linhas)
     relatorio.salvar_csv(avaliacao, reports / "60_agente" / "avaliacao.csv")
-    custo = (
-        avaliacao["tokens_entrada"].sum() * DOLARES_POR_MILHAO["entrada"]
-        + avaliacao["tokens_saida"].sum() * DOLARES_POR_MILHAO["saida"]
-    ) / 1e6
+    escrever_relatorio(avaliacao, MODELO, reports)
+    return avaliacao
+
+
+def escrever_relatorio(avaliacao: pd.DataFrame, modelo: str, reports: Path = REPORTS) -> None:
+    tokens_entrada, tokens_saida = (
+        avaliacao["tokens_entrada"].sum(),
+        avaliacao["tokens_saida"].sum(),
+    )
     texto = relatorio.preencher(
         "agente",
-        modelo=MODELO,
+        modelo=modelo,
         acertos=int(avaliacao["acertou"].sum()),
         total=len(avaliacao),
         tolerancia=TOLERANCIA,
-        tokens=int(avaliacao[["tokens_entrada", "tokens_saida"]].to_numpy().sum()),
-        custo=custo,
+        tokens=int(tokens_entrada + tokens_saida),
+        custo=custo_em_dolares(modelo, tokens_entrada, tokens_saida),
         tabela=relatorio.tabela(
-            avaliacao.drop(columns=["tokens_entrada", "tokens_saida"]), casas=2
+            avaliacao.drop(columns=["tokens_entrada", "tokens_saida"]), casas=4
         ),
     )
     (reports / "agente.md").write_text(texto, encoding="utf-8")
-    return avaliacao

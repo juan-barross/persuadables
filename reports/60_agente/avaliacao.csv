@@ -1,0 +1,11 @@
+pergunta,esperado,resposta,acertou,tokens_entrada,tokens_saida
+"Qual foi o efeito médio da campanha na taxa de compra, em pontos percentuais?",3.3231,3.32308,True,1989,174
+Quantos compradores a mais a campanha gerou entre os clientes tratados?,3322.45,3322.45,True,2009,265
+"Qual o efeito da campanha, em p.p., no decil de clientes que menos gastavam antes?",7.2193,7.21927,True,6253,528
+Qual a AUUC do S-learner no conjunto de teste?,0.0148,0.0147789,True,2012,151
+Qual a mediana de idade dos 20% de clientes com maior uplift previsto?,58,58,True,4574,556
+Quantos compradores a mais teremos mandando por uplift para 20% da base?,2740.9,2740.9,True,2246,522
+"Qual o lucro incremental de mandar por uplift para 15% da base, com contato a 3 rublos e margem de 20%?",159783,159783,True,2210,334
+"Com contato a 5 rublos e margem de 25%, qual o lucro de mandar por propensão para 30% da base?",-160436,-160436,True,2200,240
+Qual o lucro de mandar a campanha para a base inteira com contato a 6 rublos e margem de 20%?,-540927,-540927,True,2433,573
+"Com contato a 6 rublos e margem de 20%, qual porcentagem da base devemos contatar por uplift para ter o maior lucro? Responda em %.",10,,False,15616,923

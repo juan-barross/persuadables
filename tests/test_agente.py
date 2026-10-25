@@ -102,3 +102,8 @@ def test_avaliacao_conta_acertos_e_grava_relatorio(tmp_path: Path) -> None:
     avaliacao = agente.avaliar(cliente, reports)
     assert avaliacao["acertou"].sum() == len(gabarito) - 1
     assert "**9 de 10 acertos**" in (reports / "agente.md").read_text(encoding="utf-8")
+
+
+def test_custo_e_zero_em_modelo_gratuito_e_preco_do_opus_nos_demais() -> None:
+    assert agente.custo_em_dolares("nvidia/nemotron-3-ultra-550b-a55b:free", 10**6, 10**6) == 0
+    assert agente.custo_em_dolares("anthropic/claude-opus-5.5", 10**6, 10**6) == 24
